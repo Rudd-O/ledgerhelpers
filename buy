@@ -170,7 +170,6 @@ class LedgerAmountEntry(Gtk.Grid):
         return self.amount
 
     def set_amount(self, amount, skip_entry_update=False):
-        print "setting amoutn to %r"%amount
         self.amount = amount
         self.display.set_text(str(amount) if amount is not None else "")
         self.donotreact = True
@@ -183,7 +182,6 @@ class LedgerAmountEntry(Gtk.Grid):
         if self.donotreact:
             return
 
-        print "entry changed to %r" % self.entry.get_text()
         text = self.entry.get_text()
 
         try:
