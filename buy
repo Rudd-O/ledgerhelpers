@@ -3,7 +3,6 @@
 import datetime
 from gi.repository import GObject
 from gi.repository import Gtk
-from gi.repository import Pango
 import ledger
 import os
 import sys
@@ -11,225 +10,6 @@ import threading
 
 sys.path.append(os.path.dirname(__file__))
 import common
-
-
-EVENT_PLUS = 65451
-EVENT_MINUS = 65453
-EVENT_PAGEUP = 65365
-EVENT_PAGEDOWN = 65366
-EVENT_ESCAPE = 65307
-EVENT_ENTER = 65293
-EVENT_TAB = 65289
-EVENT_SHIFTTAB = 65056
-
-class NavigatableCalendar(Gtk.Calendar):
-
-    def __init__(self, *args):
-        Gtk.Calendar.__init__(self, *args)
-        self.followed = None
-        self.followed_last_value = None
-        self.connect("key-press-event", self.keyboard_nav)
-        self.connect("day-selected", self.process_select_day)
-
-    def set_datetime_date(self, date):
-        if isinstance(date, basestring):
-            date = datetime.datetime.strptime(date_string, "%Y-%m-%d").date()
-        if self.followed and self.followed.get_datetime_date() > date:
-            date = self.followed.get_datetime_date()
-            
-        self.select_month(date.month - 1, date.year)
-        self.select_day(date.day)
-
-    def process_select_day(self, *args):
-        if self.followed and self.followed.get_datetime_date() > self.get_datetime_date():
-            self.set_datetime_date(self.followed.get_datetime_date())
-
-    def get_datetime_date(self):
-        return datetime.date(self.props.year,
-                             self.props.month+1, self.props.day)
-
-    def keyboard_nav(self, cal, event, user_data=None):
-        c = cal.get_datetime_date()
-        if event.keyval == EVENT_PLUS:
-            n = c + datetime.timedelta(1)
-            cal.set_datetime_date(n)
-            return True
-        elif event.keyval == EVENT_MINUS:
-            n = c - datetime.timedelta(1)
-            cal.set_datetime_date(n)
-            return True
-        elif event.keyval == EVENT_PAGEUP:
-            cal.set_datetime_date(common.add_months(c, -1))
-            return True
-        elif event.keyval == EVENT_PAGEDOWN:
-            cal.set_datetime_date(common.add_months(c, 1))
-            return True
-        return False
-
-    def follow(self, other_calendar):
-        self.followed = other_calendar
-        self.followed_last_value = other_calendar.get_datetime_date()
-        def copy_when(other_calendar, *args):
-            if self.get_datetime_date() == self.followed_last_value or other_calendar.get_datetime_date() > self.get_datetime_date():
-                self.set_datetime_date(other_calendar.get_datetime_date())
-            self.followed_last_value = other_calendar.get_datetime_date()
-        other_calendar.connect("day-selected", copy_when)
-
-
-class EagerCompletion(Gtk.EntryCompletion):
-    """Completion class that substring matches within a builtin ListStore."""
-
-    def __init__(self, *args):
-        Gtk.EntryCompletion.__init__(self, *args)
-        self.set_model(Gtk.ListStore(GObject.TYPE_STRING))
-        self.set_text_column(0)
-        self.set_match_func(self.iter_points_to_matching_entry)
-
-    def iter_points_to_matching_entry(self, c, k, i, u=None):
-        model = self.get_model()
-        acc = model.get(i, 0)[0].lower()
-        if k in acc:
-            return True
-        return False
-
-    def matching_entries(self, k, u=None):
-        matches = []
-        if not k:
-            return matches
-        model = self.get_model()
-        i = model.get_iter_first()
-        while i:
-            if self.iter_points_to_matching_entry(self, k, i):
-                matches.append(model.get(i, 0)[0])
-            i = model.iter_next(i)
-        return matches
-
-
-class EagerCompletingEntry(Gtk.Entry):
-    """Entry that substring-matches eagerly using a builtin ListStore-based Completion, and also accepts defaults."""
-
-    def __init__(self, *args):
-        Gtk.Entry.__init__(self, *args)
-        self.set_completion(EagerCompletion())
-        self.default_text = ''
-        self.old_default_text = ''
-        self.connect("focus-out-event", self.completion_unfocused)
-        self.connect("focus-out-event", self.completion_unfocused)
-        self.connect("key-press-event", self.handle_enter)
-
-    def set_default_text(self, default_text):
-        self.old_default_text = self.default_text
-        self.default_text = default_text
-        if not self.get_text() or self.get_text() == self.old_default_text:
-            self.set_text(self.default_text)
-
-    def handle_enter(self, widget, event):
-        if event.keyval == EVENT_ENTER:
-            self.completion_unfocused(self, event)
-        return False
-
-    def completion_unfocused(self, widget, event, user_data=None):
-        if self.get_text():
-            matches = self.get_completion().matching_entries(self.get_text())
-            if matches:
-                self.set_text(matches[0])
-
-
-class LedgerAmountEntry(Gtk.Grid):
-
-    __gsignals__ = {
-        'changed' : (GObject.SIGNAL_RUN_LAST, None,
-                    ())
-    }
-
-    def do_changed(self):
-        pass
-
-    def __init__(self, *args):
-        Gtk.Grid.__init__(self)
-        self.entry = Gtk.Entry()
-        self.display = Gtk.Label()
-        self.add(self.entry)
-        self.attach(self.display, 1, 0, 1, 1)
-        self.set_column_spacing(8)
-        self.donotreact = False
-        self.entry.connect("changed", self.entry_changed)
-        self.set_default_commodity(ledger.Amount("$ 1").commodity)
-        self.set_activates_default = self.entry.set_activates_default
-
-    def set_default_commodity(self, commodity):
-        if isinstance(commodity, ledger.Amount):
-            commodity = commodity.commodity
-        self.default_commodity = commodity
-        self.entry_changed(self.entry)
-
-    def grab_focus(self):
-        self.entry.grab_focus()
-
-    def get_amount(self):
-        return self.amount
-
-    def set_amount(self, amount, skip_entry_update=False):
-        self.amount = amount
-        self.display.set_text(str(amount) if amount is not None else "")
-        self.donotreact = True
-        if not skip_entry_update:
-            self.entry.set_text(str(amount) if amount is not None else "")
-        self.donotreact = False
-        self.emit("changed")
-
-    def entry_changed(self, w, *args):
-        if self.donotreact:
-            return
-
-        text = self.entry.get_text()
-
-        try:
-            p = ledger.Amount(text)
-        except ArithmeticError:
-            self.set_amount(None, True)
-            self.emit("changed")
-            return
-
-        if not str(p.commodity):
-            p.commodity = self.default_commodity
-        if str(p):
-            self.set_amount(p, True)
-        else:
-            self.set_amount(None, True)
-        
-        self.emit("changed")
-
-
-class EditableTabFocusFriendlyTextView(Gtk.TextView):
-
-    def __init__(self, *args):
-        Gtk.TextView.__init__(self, *args)
-        self.connect("key-press-event", self.handle_tab)
-        
-    def handle_tab(self, widget, event):
-        if event.keyval == EVENT_TAB:
-            widget.get_toplevel().child_focus(Gtk.DirectionType.TAB_FORWARD)
-            return True
-        elif event.keyval == EVENT_SHIFTTAB:
-            widget.get_toplevel().child_focus(Gtk.DirectionType.TAB_BACKWARD)
-            return True
-        return False
-
-
-class LedgerTransactionView(EditableTabFocusFriendlyTextView):
-
-    def __init__(self, *args):
-        EditableTabFocusFriendlyTextView.__init__(self, *args)
-        self.override_font(
-            Pango.font_description_from_string('monospace')
-        )
-
-    def generate_record(self, what, when, cleared, accountamounts):
-        lines = common.generate_record(
-            what, when, cleared, accountamounts,
-        )
-        self.get_buffer().set_text("\n".join(lines))
 
 
 class BuyWindow(Gtk.Window):
@@ -255,7 +35,7 @@ class BuyWindow(Gtk.Window):
 
         grid.attach(Gtk.Label("Amount"), 0, row, 1, 1)
 
-        self.amount = LedgerAmountEntry()
+        self.amount = common.LedgerAmountEntry()
         grid.attach(self.amount, 1, row, 1, 1)
         self.amount.set_activates_default(True)
 
@@ -263,7 +43,7 @@ class BuyWindow(Gtk.Window):
 
         grid.attach(Gtk.Label("Expense account"), 0, row, 1, 1)
 
-        self.expense = EagerCompletingEntry()
+        self.expense = common.EagerCompletingEntry()
         self.expense.set_width_chars(50)
         grid.attach(self.expense, 1, row, 1, 1)
         self.expense.set_activates_default(True)
@@ -272,14 +52,14 @@ class BuyWindow(Gtk.Window):
 
         grid.attach(Gtk.Label("Date of purchase"), 0, row, 1, 1)
 
-        self.when = NavigatableCalendar()
+        self.when = common.NavigatableCalendar()
         grid.attach(self.when, 1, row, 1, 1)
 
         row += 1
 
         self.clearing = Gtk.CheckButton("Date of clearing")
         grid.attach(self.clearing, 0, row, 1, 1)
-        self.clearing_when = NavigatableCalendar()
+        self.clearing_when = common.NavigatableCalendar()
         def process_toggle(*args):
             self.clearing_when.set_sensitive(self.clearing.get_active())
         self.clearing.connect("toggled", process_toggle)
@@ -290,14 +70,14 @@ class BuyWindow(Gtk.Window):
 
         grid.attach(Gtk.Label("Source account"), 0, row, 1, 1)
 
-        self.asset = EagerCompletingEntry()
+        self.asset = common.EagerCompletingEntry()
         self.asset.set_width_chars(50)
         grid.attach(self.asset, 1, row, 1, 1)
         self.asset.set_activates_default(True)
 
         row += 1
 
-        self.transaction_view = LedgerTransactionView()
+        self.transaction_view = common.LedgerTransactionView()
         grid.attach(self.transaction_view, 0, row, 2, 1)
 
         row += 1
@@ -333,7 +113,7 @@ class BuyApp(BuyWindow):
         self.connect("key-press-event", self.handle_escape)
 
     def handle_escape(self, window, event, user_data=None):
-        if event.keyval == EVENT_ESCAPE:
+        if event.keyval == common.EVENT_ESCAPE:
             self.emit('delete-event', None)
             return True
         return False
