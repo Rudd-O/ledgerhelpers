@@ -8,8 +8,8 @@ import os
 import sys
 import threading
 
-sys.path.append(os.path.dirname(__file__))
-import common
+import ledgerhelpers as common
+from ledgerhelpers import LedgerConfigurationError
 
 
 class BuyWindow(Gtk.Window):
@@ -277,7 +277,3 @@ def main():
     win.connect("delete-event", Gtk.main_quit)
     GObject.idle_add(win.show_all)
     Gtk.main()
-
-
-if __name__ == "__main__":
-    main()

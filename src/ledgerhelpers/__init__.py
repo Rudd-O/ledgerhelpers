@@ -1,5 +1,7 @@
 #!/usr/bin/env python
 
+__version__ = "0.0.1"
+
 import cPickle
 import calendar
 import datetime
@@ -25,6 +27,9 @@ def debug(string, *args):
     print >> sys.stderr, string
 
 
+class LedgerConfigurationError(Exception): pass
+
+
 def find_ledger_file():
     """Returns main ledger file path or raise exception if it cannot be \
 found."""
@@ -38,10 +43,10 @@ found."""
         matches = [ re.match(pat, m) for m in ledgerrc ]
         matches = [ m.group(1) for m in matches if m ]
         if not matches:
-            return None
+            raise LedgerConfigurationError("LEDGER_FILE environment variable not set, and your .ledgerrc file does not contain a --file parameter.")
         return os.path.abspath(os.path.expanduser(matches[0]))
     else:
-        raise Exception("LEDGER_FILE environment variable not set, and no \
+        raise LedgerConfigurationError("LEDGER_FILE environment variable not set, and no \
 .ledgerrc file found.")
 
 
@@ -66,10 +71,10 @@ found."""
         matches = [ re.match(pat, m) for m in ledgerrc ]
         matches = [ m.group(1) for m in matches if m ]
         if not matches:
-            return None
+            raise LedgerConfigurationError("LEDGER_PRICE_DB environment variable not set, and your .ledgerrc file does not contain a --price-db parameter.")
         return os.path.abspath(os.path.expanduser(matches[0]))
     else:
-        raise Exception("LEDGER_PRICE_DB environment variable not set, and no \
+        raise LedgerConfigurationError("LEDGER_PRICE_DB environment variable not set, and no \
 .ledgerrc file found.")
 
 
@@ -631,3 +636,16 @@ class LedgerTransactionView(EditableTabFocusFriendlyTextView):
             what, when, cleared, accountamounts,
         )
         self.get_buffer().set_text("\n".join(lines))
+
+
+def FatalError(message, secondary=None, outside_mainloop=False, parent=None):
+    d = Gtk.MessageDialog(
+        parent,
+        Gtk.DialogFlags.DESTROY_WITH_PARENT,
+        Gtk.MessageType.ERROR,
+        Gtk.ButtonsType.CLOSE,
+        message,
+    )
+    if secondary:
+        d.format_secondary_text(secondary)
+    d.run()
