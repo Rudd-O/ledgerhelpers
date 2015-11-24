@@ -212,17 +212,17 @@ class BuyApp(BuyWindow):
         buf = self.transaction_view.get_buffer()
         text = buf.get_text(buf.get_start_iter(), buf.get_end_iter(), True)
         self.save_transaction(text)
-        self.reset()
+        self.reset_after_save()
 
     def save_transaction(self, text):
         self.journal.add_text_to_file(text)
 
-    def reset(self):
+    def reset_after_save(self):
         self.what.set_text("")
         self.expense.set_text("")
         self.amount.set_amount("")
         self.what.grab_focus()
-        self.status.set_text("")
+        self.status.set_text("Purchase saved")
 
     def update_amount_commodity(self, expense, *args):
         if not expense.get_text().strip():
