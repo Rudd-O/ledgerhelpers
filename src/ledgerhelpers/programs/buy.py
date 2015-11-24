@@ -212,6 +212,7 @@ class BuyApp(BuyWindow):
         buf = self.transaction_view.get_buffer()
         text = buf.get_text(buf.get_start_iter(), buf.get_end_iter(), True)
         self.save_transaction(text)
+        self.commodities[self.expense.get_text()] = self.amount.get_amount()
         self.reset_after_save()
 
     def save_transaction(self, text):
