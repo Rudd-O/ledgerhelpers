@@ -1,0 +1,9 @@
+[Desktop Entry]
+Name=Record purchase
+Exec=buy
+Icon=application-x-executable
+Terminal=false
+TryExec=buy
+Type=Application
+Categories=Office;Finance;
+X-AppInstall-Keywords=ledger
