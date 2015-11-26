@@ -25,6 +25,8 @@ classifiers = [
 'Topic :: Office/Business :: Financial :: Accounting',
 ]
 
+programs = ["buy", "withdraw-cli"]
+
 setup(
 	name='ledgerhelpers',
 	version=version,
@@ -41,9 +43,9 @@ setup(
 	packages=["ledgerhelpers",
               "ledgerhelpers.programs"],
 	data_files = [
-		("/usr/share/applications", ["applications/buy.desktop"]),
+		("/usr/share/applications", ["applications/%s.desktop" for p in programs]),
 	],
-	scripts=["bin/buy"],
+	scripts=["bin/%s" for p in programs],
 	keywords="accounting ledger ledger-cli",
 	requires=["ledger"],
 	zip_safe=False,

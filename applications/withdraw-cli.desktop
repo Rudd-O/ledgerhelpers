@@ -1,0 +1,9 @@
+[Desktop Entry]
+Name=Record withdrawal (CLI)
+Exec=withdraw-cli
+Icon=application-x-executable
+Terminal=true
+TryExec=withdraw-cli
+Type=Application
+Categories=Office;Finance;
+X-AppInstall-Keywords=ledger
