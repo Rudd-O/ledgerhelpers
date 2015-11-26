@@ -43,9 +43,9 @@ setup(
 	packages=["ledgerhelpers",
               "ledgerhelpers.programs"],
 	data_files = [
-		("/usr/share/applications", ["applications/%s.desktop" for p in programs]),
+		("/usr/share/applications", ["applications/%s.desktop" % p for p in programs]),
 	],
-	scripts=["bin/%s" for p in programs],
+	scripts=["bin/%s" % p for p in programs],
 	keywords="accounting ledger ledger-cli",
 	requires=["ledger"],
 	zip_safe=False,
