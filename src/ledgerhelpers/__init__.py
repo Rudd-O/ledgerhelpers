@@ -649,3 +649,23 @@ def FatalError(message, secondary=None, outside_mainloop=False, parent=None):
     if secondary:
         d.format_secondary_text(secondary)
     d.run()
+
+
+def load_journal_and_settings_for_gui():
+    errdialog = lambda msg: FatalError("Cannot start buy", msg, outside_mainloop=True)
+    try:
+        ledger_file = find_ledger_file()
+    except Exception, e:
+        errdialog(str(e))
+        sys.exit(4)
+    try:
+        price_file = find_ledger_price_file()
+    except LedgerConfigurationError, e:
+        price_file = None
+    try:
+        journal = Journal.from_file(ledger_file, price_file)
+    except Exception, e:
+        errdialog("Cannot open ledger file: %s" % e)
+        sys.exit(5)
+    s = Settings.load_or_defaults(os.path.expanduser("~/.ledgerhelpers.ini"))
+    return journal, s

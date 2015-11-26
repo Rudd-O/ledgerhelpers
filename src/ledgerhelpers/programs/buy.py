@@ -3,13 +3,10 @@
 import datetime
 from gi.repository import GObject
 from gi.repository import Gtk
-import ledger
-import os
 import sys
 import threading
 
 import ledgerhelpers as common
-from ledgerhelpers import LedgerConfigurationError
 
 
 class BuyWindow(Gtk.Window):
@@ -266,22 +263,7 @@ class InnocuousBuyApp(BuyApp):
 
 
 def main():
-    errdialog = lambda msg: common.FatalError("Cannot start buy", msg, outside_mainloop=True)
-    try:
-        ledger_file = common.find_ledger_file()
-    except Exception, e:
-        errdialog(str(e))
-        return 4
-    try:
-        price_file = common.find_ledger_price_file()
-    except LedgerConfigurationError, e:
-        price_file = None
-    try:
-        journal = common.Journal.from_file(ledger_file, price_file)
-    except Exception, e:
-        errdialog("Cannot open ledger file: %s" % e)
-        return 5
-    s = common.Settings.load_or_defaults(os.path.expanduser("~/.ledgerhelpers.ini"))
+    journal, s = common.load_journal_and_settings_for_gui()
     args = sys.argv[1:]
     klass = BuyApp
     if args and args[0] == "-n":
