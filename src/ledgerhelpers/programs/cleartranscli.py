@@ -1,12 +1,11 @@
 #!/usr/bin/env python
 
 import datetime
-import ledger
 import os
 import re
 import sys
 sys.path.append(os.path.dirname(__file__))
-import common
+import ledgerhelpers as common
 
 
 date_re = re.compile("^([0-9][0-9][0-9][0-9].[0-9][0-9].[0-9][0-9])(=[0-9][0-9][0-9][0-9].[0-9][0-9].[0-9][0-9]|)( +\\*| +)")
@@ -59,5 +58,6 @@ def clear(f):
             raise
 
 
-if __name__ == "__main__":
-    sys.exit(clear(common.find_ledger_file()))
+def main():
+    ledger_file = common.find_ledger_file_for_gui()
+    return clear(ledger_file)

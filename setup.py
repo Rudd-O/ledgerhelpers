@@ -25,7 +25,7 @@ classifiers = [
 'Topic :: Office/Business :: Financial :: Accounting',
 ]
 
-programs = ["buy", "withdraw-cli"]
+programs = ["buy", "withdraw-cli", "cleartrans-cli"]
 
 setup(
 	name='ledgerhelpers',
