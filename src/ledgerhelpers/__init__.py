@@ -125,10 +125,10 @@ class Journal(object):
 
     def reread_files(self):
         files = []
-        if self.path:
-            files.append(self.path)
         if self.price_path:
             files.append(self.price_path)
+        if self.path:
+            files.append(self.path)
         text = "\n".join(file(x).read() for x in files)
         self.session = ledger.Session()
         self.journal = self.session.read_journal_from_string(text)
