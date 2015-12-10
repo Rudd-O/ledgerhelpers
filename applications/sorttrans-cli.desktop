@@ -1,0 +1,9 @@
+[Desktop Entry]
+Name=Sort transactions (CLI)
+Exec=sorttrans-cli
+Icon=application-x-executable
+Terminal=true
+TryExec=sorttrans-cli
+Type=Application
+Categories=Office;Finance;
+X-AppInstall-Keywords=ledger

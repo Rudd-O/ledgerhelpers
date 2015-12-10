@@ -149,6 +149,10 @@ class Journal(object):
     def query(self, querystring):
         return self.journal.query(querystring)
 
+    def raw_xacts_iter(self):
+        for p in self.journal.xacts():
+            yield p
+
     def balance_in_single_commodity(self, querystring):
         amount1 = ledger.Balance()
         for post in self.journal.query("Assets:Cash"):
