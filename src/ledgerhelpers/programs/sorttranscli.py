@@ -24,15 +24,23 @@ def get_argparser():
 
 
 def sort_transactions(items):
+    smallest_date = datetime.date(1000, 1, 1)
+    largest_date = datetime.date(3000, 1, 1)
     bydates = collections.OrderedDict()
+    first_transaction_seen = False
     for n, item in enumerate(items):
-        earlier_dates = itertools.chain(
-            (getattr(items[i], "date", None) for i in xrange(n, -1, -1)),
-            [datetime.date(1000, 1, 1)]
-        )
-        for date in earlier_dates:
-            if date is not None:
-                break
+        if hasattr(item, "date"):
+            first_transaction_seen = True
+        if first_transaction_seen:
+            later_dates = itertools.chain(
+                (getattr(items[i], "date", None) for i in xrange(n, len(items))),
+                [largest_date]
+            )
+            for date in later_dates:
+                if date is not None:
+                    break
+        else:
+            date = smallest_date
         if date not in bydates:
             bydates[date] = []
         bydates[date] += [item]

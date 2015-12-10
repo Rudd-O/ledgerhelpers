@@ -69,7 +69,7 @@ class TokenTransaction(Token):
         self.date = parse_date_from_transaction_contents(self.contents)
 
 
-class TokenTransactionWithContext(Token):
+class TokenTransactionWithContext(TokenTransaction):
 
     def __init__(self, pos, tokens):
         self.transaction = [ t for t in tokens if isinstance(t, TokenTransaction) ][0]
