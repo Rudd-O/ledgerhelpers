@@ -1,8 +1,9 @@
 #!/usr/bin/env python
 
 import argparse
-import datetime
 import collections
+import datetime
+import itertools
 import subprocess
 import tempfile
 
@@ -25,14 +26,13 @@ def get_argparser():
 def sort_transactions(items):
     bydates = collections.OrderedDict()
     for n, item in enumerate(items):
-        try:
-            later_item = item
-            while not hasattr(later_item, "date"):
-                n += 1
-                later_item = items[n]
-            date = later_item.date
-        except (IndexError, AttributeError):
-            date = datetime.date(3000, 1, 1)
+        earlier_dates = itertools.chain(
+            (getattr(items[i], "date", None) for i in xrange(n, -1, -1)),
+            [datetime.date(1000, 1, 1)]
+        )
+        for date in earlier_dates:
+            if date is not None:
+                break
         if date not in bydates:
             bydates[date] = []
         bydates[date] += [item]
