@@ -1,0 +1,9 @@
+[Desktop Entry]
+Name=Update price file
+Exec=updateprices
+Icon=application-x-executable
+Terminal=false
+TryExec=updateprices
+Type=Application
+Categories=Office;Finance;
+X-AppInstall-Keywords=ledger

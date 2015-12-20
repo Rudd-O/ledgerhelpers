@@ -25,7 +25,7 @@ classifiers = [
 'Topic :: Office/Business :: Financial :: Accounting',
 ]
 
-programs = ["buy", "withdraw-cli", "cleartrans-cli", "sorttrans-cli"]
+programs = ["buy", "withdraw-cli", "cleartrans-cli", "sorttrans-cli", "updateprices"]
 
 setup(
 	name='ledgerhelpers',
@@ -47,6 +47,6 @@ setup(
 	],
 	scripts=["bin/%s" % p for p in programs],
 	keywords="accounting ledger ledger-cli",
-	requires=["ledger"],
+	requires=["ledger", "yahoo_finance"],
 	zip_safe=False,
 )

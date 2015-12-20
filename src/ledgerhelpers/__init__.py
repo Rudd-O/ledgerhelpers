@@ -111,6 +111,28 @@ def generate_record(title, date, cleared_date, accountamounts):
     return lines
 
 
+def generate_price_records(records):
+    """Generates a set of price records.
+
+    records is a list containing tuples.  each tuple contains:
+      commodity is a ledger commodity
+      price is the price in ledger.Amount form
+      date is a datetime.date
+    """
+    lines = [""]
+    longestcomm = max(list(len(str(a[0])) for a in records))
+    longestamount = max(list(len(str(a[1])) for a in records))
+    for commodity, price, date in records:
+        fmt = "P %s %-" + str(longestcomm) + "s %" + str(longestamount) + "s"
+        lines.append(fmt % (
+            date.strftime("%Y-%m-%d %H:%M:%S"),
+            commodity,
+            price,
+        ))
+    lines.append("")
+    return lines
+
+
 class Journal(object):
     def __init__(self):
         """Do not instantiate directly.  Use class methods."""
@@ -135,6 +157,26 @@ class Journal(object):
         text = "\n".join(file(x).read() for x in files)
         self.session = ledger.Session()
         self.journal = self.session.read_journal_from_string(text)
+
+    def commodities(self):
+        pool = None
+        for post in self.journal.query(""):
+            for post in post.xact.posts():
+                pool = post.amount.commodity.pool()
+        if pool is None:
+            pool = ledger.Amount("$ 1").commodity.pool()
+        for n in pool.iterkeys():
+            if n in "%hms" or not n:
+                continue
+            c = pool.find(n)
+            yield c
+
+    def commodity(self, label, create=False):
+        pool = ledger.Amount("$ 1").commodity.pool()
+        if create:
+            return pool.find_or_create(label)
+        else:
+            return pool.find(label)
 
     def accounts_and_last_commodities(self):
         accts = []
@@ -165,8 +207,17 @@ class Journal(object):
     def generate_record(self, *args):
         return generate_record(*args)
 
+    def generate_price_records(self, prices):
+        return generate_price_records(prices)
+
     def add_lines_to_file(self, lines):
         f = open(self.path, "a")
+        print >> f, "\n".join(lines),
+        f.close()
+        self.reread_files()
+
+    def add_lines_to_price_file(self, lines):
+        f = open(self.price_path, "a")
         print >> f, "\n".join(lines),
         f.close()
         self.reread_files()
