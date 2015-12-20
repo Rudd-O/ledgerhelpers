@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 
 import argparse
+import codecs
 import collections
 import datetime
 import itertools
@@ -56,7 +57,7 @@ def main(argv):
     assert not args.assume_yes
     ledgerfile = ledgerhelpers.find_ledger_file_for_gui()
     try:
-        leftcontents = open(ledgerfile, "rb").read()
+        leftcontents = codecs.open(ledgerfile, "rb", "utf-8").read()
         items = parser.lex_ledger_file_contents(leftcontents, debug=args.debug)
         rightcontents = u"".join(i.contents for i in sort_transactions(items))
         try:

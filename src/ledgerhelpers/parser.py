@@ -154,6 +154,10 @@ class GenericLexer(object):
 
 class LedgerTextLexer(GenericLexer):
 
+    def __init__(self, text):
+        assert isinstance(text, unicode), type(text)
+        GenericLexer.__init__(self, text)
+
     def state_parsing_toplevel_text(self):
         """Returns another state function."""
         chars = []
