@@ -683,7 +683,7 @@ def FatalError(message, secondary=None, outside_mainloop=False, parent=None):
 cannot_start_dialog = lambda msg: FatalError("Cannot start program", msg, outside_mainloop=True)
 
 
-def load_journal_and_settings_for_gui():
+def load_journal_and_settings_for_gui(price_file_mandatory=False):
     try:
         ledger_file = find_ledger_file()
     except Exception, e:
@@ -692,7 +692,14 @@ def load_journal_and_settings_for_gui():
     try:
         price_file = find_ledger_price_file()
     except LedgerConfigurationError, e:
-        price_file = None
+        if price_file_mandatory:
+            cannot_start_dialog(str(e))
+            sys.exit(4)
+        else:
+            price_file = None
+    except Exception, e:
+        cannot_start_dialog(str(e))
+        sys.exit(4)
     try:
         journal = Journal.from_file(ledger_file, price_file)
     except Exception, e:
