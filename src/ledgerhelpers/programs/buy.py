@@ -95,7 +95,7 @@ class BuyWindow(Gtk.Window):
         self.add_button.grab_default()
 
 
-class BuyApp(BuyWindow):
+class BuyApp(BuyWindow, common.EscapeHandlingMixin):
 
     def __init__(self, journal, preferences, initial_purchase):
         BuyWindow.__init__(self)
@@ -109,13 +109,7 @@ class BuyApp(BuyWindow):
         self.close_button.connect("clicked", lambda _: self.emit('delete-event', None))
         self.add_button.connect("clicked", lambda _: self.process_transaction())
         self.connect("delete-event", lambda _, _a: self.save_preferences())
-        self.connect("key-press-event", self.handle_escape)
-
-    def handle_escape(self, window, event, user_data=None):
-        if event.keyval == common.EVENT_ESCAPE:
-            self.emit('delete-event', None)
-            return True
-        return False
+        self.activate_escape_handling()
 
     def load_accounts_and_commodities_async(self):
         accts, commodities = self.journal.accounts_and_last_commodities()

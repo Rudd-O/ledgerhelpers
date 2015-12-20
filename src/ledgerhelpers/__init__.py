@@ -644,6 +644,29 @@ class LedgerTransactionView(EditableTabFocusFriendlyTextView):
         self.get_buffer().set_text("\n".join(lines))
 
 
+class EscapeHandlingMixin(object):
+
+    escape_handling_suspended = False
+
+    def activate_escape_handling(self):
+        self.connect("key-press-event", self.handle_escape)
+
+    def suspend_escape_handling(self):
+        self.escape_handling_suspended = True
+
+    def resume_escape_handling(self):
+        self.escape_handling_suspended = False
+
+    def handle_escape(self, window, event, user_data=None):
+        if (
+            not self.escape_handling_suspended and
+            event.keyval == EVENT_ESCAPE
+        ):
+            self.emit('delete-event', None)
+            return True
+        return False
+
+
 def FatalError(message, secondary=None, outside_mainloop=False, parent=None):
     d = Gtk.MessageDialog(
         parent,
