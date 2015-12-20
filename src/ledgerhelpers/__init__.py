@@ -220,7 +220,7 @@ def get_terminal_size(fd):
     def ioctl_GWINSZ(fd):
         return struct.unpack('hh', fcntl.ioctl(fd, termios.TIOCGWINSZ, '1234'))
     return ioctl_GWINSZ(fd)
-            
+
 
 def get_terminal_width(fd):
     return get_terminal_size(fd)[1]
