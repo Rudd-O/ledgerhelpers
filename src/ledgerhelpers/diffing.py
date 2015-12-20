@@ -30,7 +30,10 @@ def three_way_diff(basefilename, leftcontents, rightcontents):
 
 
 def two_way_diff(leftcontents, rightcontents):
-    """Raises: subprocess.CalledProcessError."""
+    """Given two strings which are assumed to be utf-8, open a
+    two-way diff view with them.
+
+    Raises: subprocess.CalledProcessError."""
     if isinstance(leftcontents, unicode):
         leftcontents = leftcontents.encode("utf-8")
     if isinstance(rightcontents, unicode):
