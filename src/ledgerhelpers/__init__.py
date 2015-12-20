@@ -1,16 +1,9 @@
 #!/usr/bin/env python
 
-__version__ = "0.0.8"
-
 import cPickle
 import calendar
 import datetime
 import fcntl
-from gi.repository import GObject
-import gi
-gi.require_version("Gtk", "3.0")
-from gi.repository import Gtk
-from gi.repository import Pango
 import ledger
 import re
 import os
@@ -18,6 +11,14 @@ import struct
 import sys
 import termios
 import tty
+
+from gi.repository import GObject
+import gi
+gi.require_version("Gtk", "3.0")
+from gi.repository import Gtk
+from gi.repository import Pango
+
+__version__ = "0.0.8"
 
 
 CURSOR_UP = "\033[F"
