@@ -27,3 +27,25 @@ def three_way_diff(basefilename, leftcontents, rightcontents):
     finally:
         prevfile.close()
         newfile.close()
+
+
+def two_way_diff(leftcontents, rightcontents):
+    """Raises: subprocess.CalledProcessError."""
+    if not isinstance(leftcontents, unicode):
+        leftcontents = leftcontents.encode("utf-8")
+    if not isinstance(rightcontents, unicode):
+        rightcontents = rightcontents.encode("utf-8")
+
+    prevfile = tempfile.NamedTemporaryFile(prefix=".base.")
+    prevfile.write(leftcontents)
+    prevfile.flush()
+    newfile = tempfile.NamedTemporaryFile(prefix=".new.")
+    newfile.write(rightcontents)
+    newfile.flush()
+    try:
+        subprocess.check_call(
+            ('meld', prevfile.name, newfile.name)
+        )
+    finally:
+        prevfile.close()
+        newfile.close()

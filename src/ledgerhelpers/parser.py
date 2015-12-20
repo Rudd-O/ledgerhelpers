@@ -2,6 +2,8 @@
 
 import datetime
 
+from ledgerhelpers import diffing
+
 
 CHAR_ENTER = "\n"
 CHAR_COMMENT = ";#"
@@ -287,15 +289,21 @@ class LedgerContextualLexer(GenericLexer):
                     )
                 )
 
-def lex_ledger_file_contents(text):
+def lex_ledger_file_contents(text, debug=False):
     lexer = LedgerTextLexer(text)
     lexer.run()
     concat_lexed = u"".join([ x.contents for x in lexer.tokens ])
     if concat_lexed != text:
+        if debug:
+            u = "Debugging error lexing text: files differ\n\n"
+            diffing.two_way_diff(u + text, u + concat_lexed)
         raise LexingError("the lexed contents and the original contents are not the same")
     lexer = LedgerContextualLexer(lexer.tokens)
     lexer.run()
     concat_lexed = u"".join([ x.contents for x in lexer.tokens ])
     if concat_lexed != text:
+        if debug:
+            u = "Debugging error lexing chunks: files differ\n\n"
+            diffing.two_way_diff(u + text, u + concat_lexed)
         raise LexingError("the lexed chunks and the original chunks are not the same")
     return lexer.tokens
