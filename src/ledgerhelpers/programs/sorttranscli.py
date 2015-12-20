@@ -8,6 +8,7 @@ import subprocess
 import tempfile
 
 import ledgerhelpers
+from ledgerhelpers import diffing
 from ledgerhelpers import parser
 
 
@@ -55,20 +56,11 @@ def main(argv):
     assert not args.assume_yes
     ledgerfile = ledgerhelpers.find_ledger_file_for_gui()
     try:
-        text = file(ledgerfile, 'rb').read()
-        items = parser.lex_ledger_file_contents(text)
-        sorted_items = sort_transactions(items)
-        prevfile = tempfile.NamedTemporaryFile(prefix=ledgerfile + ".previous.")
-        prevfile.write(text)
-        prevfile.flush()
-        newfile = tempfile.NamedTemporaryFile(prefix=ledgerfile + ".new.")
-        for item in sorted_items:
-            newfile.write(item.contents)
-        newfile.flush()
+        leftcontents = open(ledgerfile, "rb").read()
+        items = parser.lex_ledger_file_contents(leftcontents, debug=args.debug)
+        rightcontents = u"".join(i.contents for i in sort_transactions(items))
         try:
-            subprocess.check_call(
-                ('meld', prevfile.name, ledgerfile, newfile.name)
-            )
+            diffing.three_way_diff(ledgerfile, leftcontents, rightcontents)
         except subprocess.CalledProcessError, e:
             if args.debug:
                 raise
@@ -76,9 +68,6 @@ def main(argv):
                        "Meld process failed with return code %s" % e.returncode,
                        outside_mainloop=True)
             return e.returncode
-        finally:
-            prevfile.close()
-            newfile.close()
     except Exception, e:
         if args.debug:
             raise
