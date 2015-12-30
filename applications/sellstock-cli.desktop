@@ -1,0 +1,9 @@
+[Desktop Entry]
+Name=Record stock sale (CLI)
+Exec=sellstock-cli
+Icon=application-x-executable
+Terminal=true
+TryExec=sellstock-cli
+Type=Application
+Categories=Office;Finance;
+X-AppInstall-Keywords=ledger
