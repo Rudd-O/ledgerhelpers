@@ -433,7 +433,7 @@ def prompt_for_amount(fdin, fdout, prompt, commodity_example):
         go_cursor_up(fdout)
         line = prompt + " " + "'%s': %s" % (inp, match)
         print_line_ellipsized(fdout, cols, line)
-    assert match
+    assert match is not None
     return match
 
 
