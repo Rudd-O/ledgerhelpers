@@ -37,6 +37,8 @@ def clear(f):
             initial = datetime.datetime.strptime(m.group(2)[1:], "%Y-%m-%d").date()
         else:
             initial = datetime.datetime.strptime(m.group(1), "%Y-%m-%d").date()
+        if initial > datetime.date.today():
+            continue
         choice = common.prompt_for_date_optional(
             sys.stdin, sys.stdout,
             "Mark cleared at this date?",
