@@ -83,6 +83,14 @@ class TokenTransactionWithContext(TokenTransaction):
         return self.transaction.date
 
 
+class TokenConversion(Token):
+    pass
+
+
+class TokenPrice(Token):
+    pass
+
+
 class TokenEmbeddedPython(Token):
     pass
 
@@ -170,6 +178,12 @@ class LedgerTextLexer(GenericLexer):
             if self.peek() in CHAR_NUMBER:
                 self.emit(TokenWhitespace, chars)
                 return self.state_parsing_transaction
+            if self.confirm_next("P"):
+                self.emit(TokenWhitespace, chars)
+                return self.state_parsing_price
+            if self.confirm_next("C"):
+                self.emit(TokenWhitespace, chars)
+                return self.state_parsing_conversion
             if self.confirm_next("python"):
                 self.emit(TokenWhitespace, chars)
                 return self.state_parsing_embedded_python
@@ -194,16 +208,24 @@ class LedgerTextLexer(GenericLexer):
         self.emit(TokenComment, chars)
         return self.state_parsing_toplevel_text
 
+    def state_parsing_price(self):
+        return self.state_parsing_embedded_directive(TokenPrice, False)
+
+    def state_parsing_conversion(self):
+        return self.state_parsing_embedded_directive(TokenConversion, False)
+
     def state_parsing_embedded_tag(self):
         return self.state_parsing_embedded_directive(TokenEmbeddedTag)
 
     def state_parsing_embedded_python(self):
         return self.state_parsing_embedded_directive(TokenEmbeddedPython)
 
-    def state_parsing_embedded_directive(self, klass):
+    def state_parsing_embedded_directive(self, klass, maybe_multiline=True):
         chars = [self.next()]
         while self.more():
             if chars[-1] in CHAR_ENTER:
+                if not maybe_multiline:
+                    break
                 if self.peek() in CHAR_WHITESPACE + CHAR_ENTER:
                     chars.append(self.next())
                     continue
