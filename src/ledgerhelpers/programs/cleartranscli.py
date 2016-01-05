@@ -21,7 +21,7 @@ def clear(f):
             continue
         if "*" in m.group(3):
             continue
-        sys.stdout.write(line)
+        lines_to_write = [line]
         originaln = n
         while True:
             n = n + 1
@@ -30,7 +30,7 @@ def clear(f):
             except IndexError:
                 break
             if nextline.startswith(" ") or nextline.startswith("\t"):
-                sys.stdout.write(nextline)
+                lines_to_write.append(nextline)
             else:
                 break
         if m.group(2):
@@ -39,6 +39,9 @@ def clear(f):
             initial = datetime.datetime.strptime(m.group(1), "%Y-%m-%d").date()
         if initial > datetime.date.today():
             continue
+        for line in lines_to_write:
+            sys.stdout.write(line)
+        sys.stdout.flush()
         choice = common.prompt_for_date_optional(
             sys.stdin, sys.stdout,
             "Mark cleared at this date?",
