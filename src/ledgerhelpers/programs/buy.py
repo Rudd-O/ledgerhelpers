@@ -104,6 +104,7 @@ class BuyApp(BuyWindow, common.EscapeHandlingMixin):
         self.commodities = dict()
         self.accounts = []
         self.initial_purchase = initial_purchase
+        self.successfully_loaded_accounts_and_commodities = False
         t = threading.Thread(target=self.load_accounts_and_commodities_async)
         self.connect("show", lambda _: t.start())
         self.close_button.connect("clicked", lambda _: self.emit('delete-event', None))
@@ -112,11 +113,18 @@ class BuyApp(BuyWindow, common.EscapeHandlingMixin):
         self.activate_escape_handling()
 
     def load_accounts_and_commodities_async(self):
-        accts, commodities = self.journal.accounts_and_last_commodities()
+
+        def load_accounts_and_commodities_failed(exception):
+            common.FatalError(
+                "Transaction sort failed",
+                "An unexpected error took place:\n%s" % e,
+            )
+            self.emit('delete-event', None)
 
         def load_accounts_and_commodities_finished(accts, commodities):
             self.accounts = accts
             self.commodities = commodities
+            self.successfully_loaded_accounts_and_commodities = True
 
             self.what.connect("changed", self.suggest_expense_account)
             self.expense.connect("changed", self.update_amount_commodity)
@@ -148,7 +156,11 @@ class BuyApp(BuyWindow, common.EscapeHandlingMixin):
             self.expense.connect("changed", self.update_transaction_view)
             self.update_transaction_view()
 
-        GObject.idle_add(load_accounts_and_commodities_finished, accts, commodities)
+        try:
+            accts, commodities = self.journal.accounts_and_last_commodities()
+            GObject.idle_add(load_accounts_and_commodities_finished, accts, commodities)
+        except Exception, e:
+            GObject.idle_add(load_accounts_and_commodities_failed, e)
 
     def set_accounts_for_completion(self, account_list):
         for w in "asset", "expense":
@@ -233,6 +245,8 @@ class BuyApp(BuyWindow, common.EscapeHandlingMixin):
             self.expense.set_default_text(suggestion)
 
     def save_preferences(self):
+        if not self.successfully_loaded_accounts_and_commodities:
+            return
         self.preferences["default_to_clearing"] = self.clearing.get_active()
         if self.when.get_datetime_date() == datetime.date.today():
             del self.preferences["last_date"]
