@@ -179,16 +179,16 @@ class Journal(object):
             return pool.find(label)
 
     def accounts_and_last_commodities(self):
+        # Commodities returned by this method do not contain any annotations.
         accts = []
         commos = dict()
         for post in self.journal.query(""):
             for post in post.xact.posts():
                 if str(post.account) not in accts:
                     accts.append(str(post.account))
-                commos[str(post.account)] = post.amount / post.amount
-                if '{' in str(commos[str(post.account)]):
-                    q = str(commos[str(post.account)]).split('{')[0]
-                    commos[str(post.account)] = ledger.Amount(q)
+                comm = post.amount / post.amount
+                comm.commodity = comm.commodity.strip_annotations()
+                commos[str(post.account)] = comm
         return accts, commos
 
     def query(self, querystring):
