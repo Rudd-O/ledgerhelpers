@@ -768,3 +768,27 @@ def find_ledger_file_for_gui():
     except Exception, e:
         cannot_start_dialog(str(e))
         sys.exit(4)
+
+
+def parse_date(putative_date, return_format=False):
+    """Returns a date substring in a ledger entry, parsed as datetime.date."""
+    # FIXME: use Ledger functions to parse dates, not mine.
+    formats = ["%Y-%m-%d", "%Y/%m/%d"]
+    for f in formats:
+        try:
+            d = datetime.datetime.strptime(putative_date, f).date()
+            break
+        except ValueError, e:
+            continue
+    try:
+        if return_format:
+            return d, f
+        else:
+            return d
+    except UnboundLocalError:
+        raise ValueError("cannot parse date from format %s: %s" % (f, e))
+
+
+def format_date(date_obj, sample_date):
+    _, fmt = parse_date(sample_date, True)
+    return date_obj.strftime(fmt)

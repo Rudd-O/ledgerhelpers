@@ -8,7 +8,8 @@ sys.path.append(os.path.dirname(__file__))
 import ledgerhelpers as common
 
 
-date_re = re.compile("^([0-9][0-9][0-9][0-9].[0-9][0-9].[0-9][0-9])(=[0-9][0-9][0-9][0-9].[0-9][0-9].[0-9][0-9]|)( +\\*| +)")
+date_re = "^([0-9][0-9][0-9][0-9].[0-9][0-9].[0-9][0-9])(=[0-9][0-9][0-9][0-9].[0-9][0-9].[0-9][0-9]|)\\s+(.+)"
+date_re = re.compile(date_re, re.DOTALL)
 
 
 def clear(f):
@@ -19,7 +20,7 @@ def clear(f):
         m = date_re.match(line)
         if not m:
             continue
-        if "*" in m.group(3):
+        if m.group(3).strip().startswith("*"):
             continue
         lines_to_write = [line]
         originaln = n
@@ -33,10 +34,8 @@ def clear(f):
                 lines_to_write.append(nextline)
             else:
                 break
-        if m.group(2):
-            initial = datetime.datetime.strptime(m.group(2)[1:], "%Y-%m-%d").date()
-        else:
-            initial = datetime.datetime.strptime(m.group(1), "%Y-%m-%d").date()
+        initial_unparsed = m.group(2)[1:] if m.group(2) else m.group(1)
+        initial = common.parse_date(initial_unparsed)
         if initial > datetime.date.today():
             continue
         for line in lines_to_write:
@@ -48,7 +47,21 @@ def clear(f):
             initial,
         )
         if choice is not None:
-            lines[originaln] = "%s=%s * %s" % (m.group(1), choice, date_re.sub("", line))
+            choice_formatted = common.format_date(choice, initial_unparsed)
+            if m.group(1) == choice_formatted:
+                lines[originaln] = "%s * %s" % (
+                    m.group(1),
+                    m.group(3)
+                )
+            else:
+                lines[originaln] = "%s=%s * %s" % (
+                    m.group(1),
+                    choice_formatted,
+                    m.group(3)
+                )
+            for number in range(originaln + 1, n):
+                # remove cleared bits on legs of the transaction
+                lines[number] = re.sub("^(\\s+)\\*\\s+", "\\1", lines[number])
             changed = True
         else:
             pass

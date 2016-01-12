@@ -2,6 +2,7 @@
 
 import datetime
 
+import ledgerhelpers
 from ledgerhelpers import diffing
 
 
@@ -26,21 +27,11 @@ def pos_within_items_to_row_and_col(pos, items):
 
 
 def parse_date_from_transaction_contents(contents):
-    # FIXME: use Ledger functions to parse dates, not mine.
-    formats = ["%Y-%m-%d", "%Y/%m/%d"]
     splits = CHAR_WHITESPACE + "="
     data = contents
     for s in splits:
         data = data.split(s)[0]
-    for f in formats:
-        try:
-            d = datetime.datetime.strptime(data, f).date()
-        except ValueError, e:
-            continue
-    try:
-        return d
-    except UnboundLocalError:
-        raise ValueError("cannot parse date from format %s: %s" % (f, e))
+    return ledgerhelpers.parse_date(data)
 
 
 class Token(object):
