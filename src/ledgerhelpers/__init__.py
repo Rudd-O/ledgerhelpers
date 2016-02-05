@@ -578,7 +578,6 @@ class EagerCompletingEntry(Gtk.Entry):
         self.default_text = ''
         self.old_default_text = ''
         self.connect("focus-out-event", self.completion_unfocused)
-        self.connect("focus-out-event", self.completion_unfocused)
         self.connect("key-press-event", self.handle_enter)
 
     def set_default_text(self, default_text):
