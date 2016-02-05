@@ -81,7 +81,11 @@ found."""
 .ledgerrc file found.")
 
 
-def generate_record(title, date, cleared_date, accountamounts):
+class LedgerParseError(ValueError):
+    pass
+
+
+def generate_record(title, date, cleared_date, accountamounts, validate=False):
     """Generates a transaction record.
 
     date is a datetime.date
@@ -102,12 +106,31 @@ def generate_record(title, date, cleared_date, accountamounts):
                                 ("=%s *" % cleared_date if cleared_date else ""),
                                 title))
 
-    longestaccount = max(list(len(a[0]) for a in accountamounts))
-    longestamount = max(list(len(resolve_amounts(a[1])) for a in accountamounts))
+    try:
+        longestaccount = max(list(len(a[0]) for a in accountamounts))
+        longestamount = max(list(len(resolve_amounts(a[1])) for a in accountamounts))
+    except ValueError:
+        longestaccount = 30
+        longestamount = 30
     pattern = "    %-" + str(longestaccount) + "s    %" + str(longestamount) + "s"
     for account, amounts in accountamounts:
         lines.append(pattern % (account, resolve_amounts(amounts)))
     lines.append("")
+
+    if validate:
+        sess = ledger.Session()
+        try:
+            sess.read_journal_from_string("\n".join(lines))
+        except RuntimeError as e:
+            lines = [x.strip() for x in str(e).splitlines() if x.strip()]
+            lines = [x for x in lines if not x.startswith("While")]
+            lines = [x + ("." if not x.endswith(":") else "") for x in lines]
+            lines = " ".join(lines)
+            if lines:
+                raise LedgerParseError(lines)
+            else:
+                raise LedgerParseError("Ledger could not validate this transaction")
+
     return lines
 
 
