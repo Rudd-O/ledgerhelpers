@@ -615,6 +615,7 @@ class LedgerAmountEntry(Gtk.Grid):
 
     def __init__(self, *args):
         Gtk.Grid.__init__(self)
+        self.amount = None
         self.entry = Gtk.Entry()
         self.display = Gtk.Label()
         self.add(self.entry)
