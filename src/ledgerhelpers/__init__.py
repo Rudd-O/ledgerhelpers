@@ -605,6 +605,11 @@ class LedgerAmountEntry(Gtk.Grid):
                     ())
     }
 
+    def show(self):
+        Gtk.Grid.show(self)
+        self.entry.show()
+        self.display.show()
+
     def do_changed(self):
         pass
 
