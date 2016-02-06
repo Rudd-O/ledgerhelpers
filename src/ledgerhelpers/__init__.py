@@ -223,7 +223,7 @@ class Journal(object):
 
     def balance_in_single_commodity(self, querystring):
         amount1 = ledger.Balance()
-        for post in self.journal.query("Assets:Cash"):
+        for post in self.journal.query(querystring):
             amount1 += post.amount
         return amount1.commodity_amount()
 
