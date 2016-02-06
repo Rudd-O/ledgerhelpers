@@ -2,6 +2,7 @@
 
 import cPickle
 import calendar
+import collections
 import datetime
 import fcntl
 import ledger
@@ -213,6 +214,14 @@ class Journal(object):
                 comm.commodity = comm.commodity.strip_annotations()
                 commos[str(post.account)] = comm
         return accts, commos
+
+    def all_payees(self):
+        """Returns a list of strings with payees (transaction titles)."""
+        titles = collections.OrderedDict()
+        for xact in self.raw_xacts_iter():
+            if xact.payee and xact.payee not in titles:
+                titles[xact.payee] = xact.payee
+        return titles.keys()
 
     def query(self, querystring):
         return self.journal.query(querystring)
