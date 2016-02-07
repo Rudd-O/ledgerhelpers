@@ -27,6 +27,27 @@ class TestParser(T):
             self.assertEqual(transaction.postings[n].account, ac)
             self.assertEqual(transaction.postings[n].amount, am)
 
+    def test_no_end_value(self):
+        c = base.data("no_end_value.dat")
+        items = parser.lex_ledger_file_contents(c)
+        self.assertEqual(len(items), 5)
+        for n, tclass in enumerate([
+            parser.TokenWhitespace,
+            parser.TokenTransaction,
+            parser.TokenWhitespace,
+            parser.TokenTransaction,
+            parser.TokenWhitespace,
+        ]):
+            self.assertIsInstance(items[n], tclass)
+        for transaction in (items[1], items[3]):
+            self.assertEqual(transaction.payee, "beer")
+            for n, (ac, am) in enumerate([
+                ("Accounts:Cash", "-6.00 CHF"),
+                ("Expenses:Drinking", ""),
+            ]):
+                self.assertEqual(transaction.postings[n].account, ac)
+                self.assertEqual(transaction.postings[n].amount, am)
+
     def test_with_comments(self):
         c = base.data("with_comments.dat")
         items = parser.lex_ledger_file_contents(c)

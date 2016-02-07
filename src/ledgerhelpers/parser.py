@@ -457,6 +457,9 @@ class LedgerTransactionLexer(GenericLexer):
             chars.append(self.next())
         if not chars:
             return
+        if self.more() and self.peek() in CHAR_ENTER:
+            self.next()
+            return self.state_parsing_transaction_posting_indentation
         return self.state_parsing_transaction_posting_account
 
     def state_parsing_transaction_comment(self):
@@ -472,7 +475,8 @@ class LedgerTransactionLexer(GenericLexer):
             if (
                 (self.peek() in CHAR_WHITESPACE and
                  chars and chars[-1] in CHAR_WHITESPACE) or
-                self.peek() in CHAR_TAB
+                self.peek() in CHAR_TAB or
+                self.peek() in CHAR_ENTER
             ):
                 while chars[-1] in CHAR_WHITESPACE:
                     chars = chars[:-1]
