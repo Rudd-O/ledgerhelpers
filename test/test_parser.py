@@ -70,7 +70,6 @@ class TestParser(T):
             self.assertEqual(transaction.postings[n].account, ac)
             self.assertEqual(transaction.postings[n].amount, am)
 
-
     def test_my_data_file(self):
         try:
             c = base.data("/home/user/.ledger")
