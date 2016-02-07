@@ -1,6 +1,5 @@
 #!/usr/bin/env python
 
-import collections
 import ledgerhelpers
 from ledgerhelpers import diffing
 
@@ -34,12 +33,6 @@ def pos_within_items_to_row_and_col(pos, items):
 
 def parse_date_from_transaction_contents(contents):
     return ledgerhelpers.parse_date(u"".join(contents))
-
-
-TransactionPosting = collections.namedtuple(
-    'TransactionPosting',
-    ['account', 'amount']
-)
 
 
 class Token(object):
@@ -136,7 +129,11 @@ class TokenTransaction(Token):
                 assert type(last) in [
                     TokenTransactionPostingAccount
                 ], lexer.tokens
-                x.append(TransactionPosting(last.account, v.amount))
+                x.append(
+                    ledgerhelpers.TransactionPosting(
+                        last.account, v.amount
+                    )
+                )
             last = v
         assert len(x) * 2 == len(accountsamounts), lexer.tokens
         self.postings = x

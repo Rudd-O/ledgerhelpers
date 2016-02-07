@@ -917,3 +917,7 @@ def parse_date(putative_date, return_format=False):
         raise ValueError("cannot parse date from format %s: %s" % (f, e))
 
 
+TransactionPosting = collections.namedtuple(
+    'TransactionPosting',
+    ['account', 'amount']
+)
