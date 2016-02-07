@@ -762,6 +762,9 @@ class LedgerAmountEntry(Gtk.Grid):
         self.donotreact = False
         self.emit("changed")
 
+    def set_text(self, text):
+        self.entry.set_text(text)
+
     def entry_changed(self, w, *args):
         if self.donotreact:
             return
