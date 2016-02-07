@@ -1,0 +1,5 @@
+2011/12/25 * a gift!
+        ; the price for the following purchase was assumed
+        Assets:Metals                              1 "silver coin"    @ $55
+        Income:Gifts                    $        -55
+
