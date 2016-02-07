@@ -709,7 +709,7 @@ class EagerCompletingEntry(Gtk.Entry):
     def completion_unfocused(self, widget, event, user_data=None):
         if self.get_text():
             matches = self.get_completion().matching_entries(self.get_text())
-            if matches:
+            if matches and self.get_text() != matches[0]:
                 self.set_text(matches[0])
 
 
