@@ -750,6 +750,9 @@ class LedgerAmountEntry(Gtk.Grid):
         self.default_commodity = commodity
         self.entry_changed(self.entry)
 
+    def is_focus(self):
+        return self.entry.is_focus()
+
     def grab_focus(self):
         self.entry.grab_focus()
 
