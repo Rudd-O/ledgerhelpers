@@ -1,7 +1,5 @@
 #!/usr/bin/env python
 
-import datetime
-
 import ledgerhelpers
 from ledgerhelpers import diffing
 
@@ -274,9 +272,9 @@ class LedgerContextualLexer(GenericLexer):
     def state_parsing_comment(self):
         token = self.next()
         if (
-            self.more()
-            and isinstance(token, TokenComment)
-            and isinstance(self.peek(), TokenTransaction)
+            self.more() and
+            isinstance(token, TokenComment) and
+            isinstance(self.peek(), TokenTransaction)
         ):
             transaction_token = self.next()
             additional_comments = []
@@ -302,10 +300,11 @@ class LedgerContextualLexer(GenericLexer):
                     )
                 )
 
+
 def lex_ledger_file_contents(text, debug=False):
     lexer = LedgerTextLexer(text)
     lexer.run()
-    concat_lexed = u"".join([ x.contents for x in lexer.tokens ])
+    concat_lexed = u"".join([x.contents for x in lexer.tokens])
     if concat_lexed != text:
         if debug:
             u = "Debugging error lexing text: files differ\n\n"
