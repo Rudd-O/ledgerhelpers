@@ -12,6 +12,8 @@ import os
 import struct
 import sys
 import termios
+import threading
+import time
 import tty
 
 from gi.repository import GObject
@@ -32,7 +34,27 @@ def debug(string, *args):
     print >> sys.stderr, string
 
 
-class LedgerConfigurationError(Exception): pass
+def debug_time(kallable):
+    def f(*a, **kw):
+        start = time.time()
+        try:
+            return kallable(*a, **kw)
+        finally:
+            end = time.time() - start
+            print "Ran %s in %.3f seconds" % (kallable, end)
+    return f
+
+
+class LedgerConfigurationError(Exception):
+    pass
+
+
+class TransactionInputValidationError(ValueError):
+    pass
+
+
+class LedgerParseError(ValueError):
+    pass
 
 
 def find_ledger_file():
@@ -83,8 +105,9 @@ found."""
 .ledgerrc file found.")
 
 
-class LedgerParseError(ValueError):
-    pass
+def format_date(date_obj, sample_date):
+    _, fmt = parse_date(sample_date, True)
+    return date_obj.strftime(fmt)
 
 
 def generate_record(title, date, cleared_date, accountamounts, validate=False):
@@ -158,8 +181,17 @@ def generate_price_records(records):
     return lines
 
 
-class Journal(object):
+class Journal(GObject.GObject):
+
+    __gsignals__ = {
+        'loaded': (GObject.SIGNAL_RUN_LAST, None, ()),
+        'load-failed': (GObject.SIGNAL_RUN_LAST, None, (object,)),
+    }
+
+    __name__ = "Journal"
+
     def __init__(self):
+        GObject.GObject.__init__(self)
         """Do not instantiate directly.  Use class methods."""
         self.path = None
         self.price_path = None
@@ -168,6 +200,7 @@ class Journal(object):
         self.internal_parsing = []
 
     @classmethod
+    @debug_time
     def from_file(klass, journal_file, price_file):
         j = klass()
         j.path = journal_file
@@ -175,29 +208,49 @@ class Journal(object):
         j.reread_files()
         return j
 
+    @classmethod
+    @debug_time
+    def from_file_unloaded(klass, journal_file, price_file):
+        j = klass()
+        j.path = journal_file
+        j.price_path = price_file
+        return j
+
+    @debug_time
     def reread_files(self):
-        files = []
-        if self.price_path:
-            files.append(self.price_path)
-        if self.path:
-            files.append(self.path)
-        text = "\n".join(file(x).read() for x in files)
-        if self.path:
-            unitext = "\n".join(
-                codecs.open(x, "rb", "utf-8").read()
-                for x in [self.path]
-            )
-        else:
-            unitext = u""
+        try:
+            files = []
+            if self.price_path:
+                files.append(self.price_path)
+            if self.path:
+                files.append(self.path)
+            text = "\n".join(file(x).read() for x in files)
 
-        session = ledger.Session()
-        journal = session.read_journal_from_string(text)
-        from ledgerhelpers import parser
-        internal_parsing = parser.lex_ledger_file_contents(unitext)
+            if self.path:
+                unitext = "\n".join(
+                    codecs.open(x, "rb", "utf-8").read()
+                    for x in [self.path]
+                )
+            else:
+                unitext = u""
 
-        self.session = session
-        self.journal = journal
-        self.internal_parsing = internal_parsing
+            session = ledger.Session()
+            journal = session.read_journal_from_string(text)
+            from ledgerhelpers import parser
+            internal_parsing = parser.lex_ledger_file_contents(unitext)
+
+            self.session = session
+            self.journal = journal
+            self.internal_parsing = internal_parsing
+            GObject.idle_add(lambda: self.emit("loaded"))
+        except Exception as e:
+            GObject.idle_add(lambda: self.emit("load-failed", e))
+            raise
+
+    @debug_time
+    def reread_files_async(self):
+        t = threading.Thread(target=self.reread_files)
+        t.start()
 
     def commodities(self):
         pool = None
@@ -283,6 +336,12 @@ class Journal(object):
         print >> f, text,
         f.close()
         self.reread_files()
+
+    def add_text_to_file_async(self, text):
+        f = open(self.path, "a")
+        print >> f, text,
+        f.close()
+        self.reread_files_async()
 
 
 class Settings(dict):
@@ -796,7 +855,9 @@ def FatalError(message, secondary=None, outside_mainloop=False, parent=None):
 cannot_start_dialog = lambda msg: FatalError("Cannot start program", msg, outside_mainloop=True)
 
 
-def load_journal_and_settings_for_gui(price_file_mandatory=False):
+@debug_time
+def load_journal_and_settings_for_gui(price_file_mandatory=False,
+                                      read_journal=True):
     try:
         ledger_file = find_ledger_file()
     except Exception, e:
@@ -814,7 +875,10 @@ def load_journal_and_settings_for_gui(price_file_mandatory=False):
         cannot_start_dialog(str(e))
         sys.exit(4)
     try:
-        journal = Journal.from_file(ledger_file, price_file)
+        if read_journal:
+            journal = Journal.from_file(ledger_file, price_file)
+        else:
+            journal = Journal.from_file_unloaded(ledger_file, price_file)
     except Exception, e:
         cannot_start_dialog("Cannot open ledger file: %s" % e)
         sys.exit(5)
@@ -850,6 +914,3 @@ def parse_date(putative_date, return_format=False):
         raise ValueError("cannot parse date from format %s: %s" % (f, e))
 
 
-def format_date(date_obj, sample_date):
-    _, fmt = parse_date(sample_date, True)
-    return date_obj.strftime(fmt)
