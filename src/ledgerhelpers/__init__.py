@@ -2,6 +2,7 @@
 
 import cPickle
 import calendar
+import codecs
 import collections
 import datetime
 import fcntl
@@ -162,7 +163,9 @@ class Journal(object):
         """Do not instantiate directly.  Use class methods."""
         self.path = None
         self.price_path = None
+        self.session = None
         self.journal = None
+        self.internal_parsing = []
 
     @classmethod
     def from_file(klass, journal_file, price_file):
@@ -179,8 +182,22 @@ class Journal(object):
         if self.path:
             files.append(self.path)
         text = "\n".join(file(x).read() for x in files)
-        self.session = ledger.Session()
-        self.journal = self.session.read_journal_from_string(text)
+        if self.path:
+            unitext = "\n".join(
+                codecs.open(x, "rb", "utf-8").read()
+                for x in [self.path]
+            )
+        else:
+            unitext = u""
+
+        session = ledger.Session()
+        journal = session.read_journal_from_string(text)
+        from ledgerhelpers import parser
+        internal_parsing = parser.lex_ledger_file_contents(unitext)
+
+        self.session = session
+        self.journal = journal
+        self.internal_parsing = internal_parsing
 
     def commodities(self):
         pool = None
@@ -218,10 +235,17 @@ class Journal(object):
     def all_payees(self):
         """Returns a list of strings with payees (transaction titles)."""
         titles = collections.OrderedDict()
-        for xact in self.raw_xacts_iter():
-            if xact.payee and xact.payee not in titles:
+        for xact in self.internal_parsing:
+            if hasattr(xact, "payee") and xact.payee not in titles:
                 titles[xact.payee] = xact.payee
         return titles.keys()
+
+    def transactions_with_payee(self, payee):
+        transes = []
+        for xact in self.internal_parsing:
+            if hasattr(xact, "payee") and xact.payee == payee:
+                transes.append(xact)
+        return transes
 
     def query(self, querystring):
         return self.journal.query(querystring)
