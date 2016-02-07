@@ -733,9 +733,12 @@ class LedgerAmountEntry(Gtk.Grid):
         self.amount = None
         self.entry = Gtk.Entry()
         self.display = Gtk.Label()
-        self.add(self.entry)
-        self.attach(self.display, 1, 0, 1, 1)
-        self.set_column_spacing(8)
+        self.attach(self.entry, 1, 0, 1, 1)
+        self.attach(self.display, 0, 0, 1, 1)
+        self.display.set_xalign(1.0)
+        self.display.set_hexpand(True)
+        self.display.set_justify(Gtk.Justification.RIGHT)
+        self.set_column_spacing(4)
         self.donotreact = False
         self.entry.connect("changed", self.entry_changed)
         self.set_default_commodity(ledger.Amount("$ 1").commodity)
