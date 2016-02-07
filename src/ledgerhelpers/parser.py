@@ -59,6 +59,10 @@ class TokenComment(Token):
     pass
 
 
+class TokenTransactionComment(Token):
+    pass
+
+
 class TokenTransactionClearedFlag(Token):
     pass
 
@@ -458,8 +462,15 @@ class LedgerTransactionLexer(GenericLexer):
             return
         return self.state_parsing_transaction_posting_account
 
+    def state_parsing_transaction_comment(self):
+        return self.state_parsing_rest_of_line(
+            TokenTransactionComment,
+            self.state_parsing_transaction_posting_indentation)
+
     def state_parsing_transaction_posting_account(self):
         chars = []
+        if self.peek() in CHAR_COMMENT:
+            return self.state_parsing_transaction_comment
         while self.more():
             if (
                 (self.peek() in CHAR_WHITESPACE and
