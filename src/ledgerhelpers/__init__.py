@@ -22,7 +22,7 @@ gi.require_version("Gtk", "3.0")
 from gi.repository import Gtk
 from gi.repository import Pango
 
-__version__ = "0.0.18"
+__version__ = "0.0.20"
 
 
 CURSOR_UP = "\033[F"
@@ -144,8 +144,13 @@ def generate_record(title, date, cleared_date, accountamounts, validate=False):
         longestaccount = 30
         longestamount = 30
     pattern = "    %-" + str(longestaccount) + "s    %" + str(longestamount) + "s"
+    pattern2 = "    %-" + str(longestaccount) + "s"
     for account, amounts in accountamounts:
-        lines.append(pattern % (account, resolve_amounts(amounts)))
+        amnts = resolve_amounts(amounts)
+        if amnts:
+            lines.append(pattern % (account, amnts))
+        else:
+            lines.append(pattern2 % (account,))
     lines.append("")
 
     if validate:
