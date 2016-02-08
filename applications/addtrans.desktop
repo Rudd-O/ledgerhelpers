@@ -2,7 +2,7 @@
 Name=Record transaction
 Exec=addtrans
 Icon=application-x-executable
-Terminal=true
+Terminal=false
 TryExec=addtrans
 Type=Application
 Categories=Office;Finance;
