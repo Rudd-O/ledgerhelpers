@@ -34,8 +34,14 @@ def debug(string, *args):
     print >> sys.stderr, string
 
 
+_debug_time = False
+
+
 def debug_time(kallable):
     def f(*a, **kw):
+        global _debug_time
+        if not _debug_time:
+            return kallable(*a, **kw)
         start = time.time()
         try:
             return kallable(*a, **kw)
