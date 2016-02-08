@@ -719,11 +719,12 @@ class LedgerAmountEntry(Gtk.Grid):
         Gtk.Grid.__init__(self)
         self.amount = None
         self.entry = Gtk.Entry()
+        self.entry.set_width_chars(8)
         self.display = Gtk.Label()
-        self.attach(self.entry, 1, 0, 1, 1)
-        self.attach(self.display, 0, 0, 1, 1)
+        self.entry.set_alignment(1.0)
+        self.attach(self.entry, 0, 0, 1, 1)
+        self.attach(self.display, 1, 0, 1, 1)
         self.display.set_xalign(1.0)
-        self.display.set_hexpand(True)
         self.display.set_justify(Gtk.Justification.RIGHT)
         self.set_column_spacing(4)
         self.donotreact = False
