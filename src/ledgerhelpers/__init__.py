@@ -293,10 +293,17 @@ class Journal(GObject.GObject):
                 titles[xact.payee] = xact.payee
         return titles.keys()
 
-    def transactions_with_payee(self, payee):
+    def transactions_with_payee(self, payee, case_sensitive=True):
         transes = []
         for xact in self.internal_parsing:
-            if hasattr(xact, "payee") and xact.payee == payee:
+            if not hasattr(xact, "payee"):
+                continue
+            left = xact.payee
+            right = payee
+            if not case_sensitive:
+                left = left.lower()
+                right = right.lower()
+            if left == right:
                 transes.append(xact)
         return transes
 
