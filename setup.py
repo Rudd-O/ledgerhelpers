@@ -31,7 +31,8 @@ programs = [
     "cleartrans-cli",
     "sorttrans-cli",
     "updateprices",
-    "sellstock-cli"
+    "sellstock-cli",
+    "addtrans",
 ]
 
 setup(

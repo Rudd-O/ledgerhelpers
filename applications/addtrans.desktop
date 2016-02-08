@@ -1,0 +1,9 @@
+[Desktop Entry]
+Name=Record transaction
+Exec=addtrans
+Icon=application-x-executable
+Terminal=true
+TryExec=addtrans
+Type=Application
+Categories=Office;Finance;
+X-AppInstall-Keywords=ledger
