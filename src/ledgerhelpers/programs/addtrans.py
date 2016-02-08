@@ -7,10 +7,10 @@ from gi.repository import Gtk
 from gi.repository import Pango
 
 
-class VestStockWindow(Gtk.Window, common.EscapeHandlingMixin):
+class AddTransWindow(Gtk.Window, common.EscapeHandlingMixin):
 
     def __init__(self):
-        Gtk.Window.__init__(self, title="Record stock vesting")
+        Gtk.Window.__init__(self, title="Add transaction")
         self.set_border_width(12)
 
         grid = Gtk.Grid()
@@ -54,10 +54,10 @@ class VestStockWindow(Gtk.Window, common.EscapeHandlingMixin):
         self.add_button.grab_default()
 
 
-class VestStockApp(VestStockWindow, common.EscapeHandlingMixin):
+class AddTransApp(AddTransWindow, common.EscapeHandlingMixin):
 
     def __init__(self, journal, preferences):
-        VestStockWindow.__init__(self)
+        AddTransWindow.__init__(self)
         self.journal = journal
         self.preferences = preferences
 
@@ -103,7 +103,7 @@ class VestStockApp(VestStockWindow, common.EscapeHandlingMixin):
 
     def journal_load_failed(self, journal, e):
         common.FatalError(
-            "Stock vest loading failed",
+            "Add transaction loading failed",
             "An unexpected error took place:\n%s" % e,
         )
         self.emit('delete-event', None)
@@ -166,12 +166,12 @@ class VestStockApp(VestStockWindow, common.EscapeHandlingMixin):
     def reset_after_save(self):
         self.transholder.clear()
         self.transholder.title_grab_focus()
-        self.status.set_text("Purchase saved")
+        self.status.set_text("Transaction saved")
 
 
 def main():
     journal, s = common.load_journal_and_settings_for_gui(read_journal=False)
-    klass = VestStockApp
+    klass = AddTransApp
     win = klass(journal, s)
     win.connect("delete-event", Gtk.main_quit)
     GObject.idle_add(win.show_all)
