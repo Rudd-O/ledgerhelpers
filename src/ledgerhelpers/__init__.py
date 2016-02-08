@@ -1161,6 +1161,9 @@ class EditableTransactionView(Gtk.Grid):
         self.payee.set_text("")
         self._postings_modified = False
 
+    def set_clearing(self, clearedornot):
+        self.clearing.set_active(clearedornot)
+
     def replace_postings(self, transactionpostings):
         """Replace postings with a list of TransactionPosting."""
         self._clear_postings()

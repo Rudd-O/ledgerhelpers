@@ -131,6 +131,7 @@ class VestStockApp(VestStockWindow, common.EscapeHandlingMixin):
 
     def autofill_transaction_view(self, transaction_view, transaction):
         transaction_view.replace_postings(transaction.postings)
+        transaction_view.set_clearing(bool(transaction.state))
 
     def update_transaction_view(self, ignored=None):
         self.update_validation()
