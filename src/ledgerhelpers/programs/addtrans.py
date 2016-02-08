@@ -117,15 +117,20 @@ class VestStockApp(VestStockWindow, common.EscapeHandlingMixin):
     def payee_changed(self, emitter=None):
         if emitter.postings_modified() and not emitter.postings_empty():
             return
-        payeetext = emitter.get_payee_text()
+        text = emitter.get_payee_text()
+        self.try_autofill(emitter, text)
+
+    def try_autofill(self, transaction_view, autofill_text):
         ts = self.journal.transactions_with_payee(
-            payeetext,
+            autofill_text,
             case_sensitive=False
         )
         if not ts:
             return
-        ts = ts[-1]
-        emitter.replace_postings(ts.postings)
+        return self.autofill_transaction_view(transaction_view, ts[-1])
+
+    def autofill_transaction_view(self, transaction_view, transaction):
+        transaction_view.replace_postings(transaction.postings)
 
     def update_transaction_view(self, ignored=None):
         self.update_validation()
