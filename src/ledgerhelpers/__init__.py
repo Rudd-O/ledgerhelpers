@@ -668,56 +668,36 @@ class EagerCompletion(Gtk.EntryCompletion):
     def __init__(self, *args):
         Gtk.EntryCompletion.__init__(self, *args)
         self.set_model(Gtk.ListStore(GObject.TYPE_STRING))
-        self.set_text_column(0)
         self.set_match_func(self.iter_points_to_matching_entry)
+        self.set_text_column(0)
+        self.set_inline_completion(True)
 
     def iter_points_to_matching_entry(self, c, k, i, u=None):
         model = self.get_model()
         acc = model.get(i, 0)[0].lower()
-        if k in acc:
+        if k.lower() in acc:
             return True
         return False
 
-    def matching_entries(self, k, u=None):
-        matches = []
-        if not k:
-            return matches
-        model = self.get_model()
-        i = model.get_iter_first()
-        while i:
-            if self.iter_points_to_matching_entry(self, k, i):
-                matches.append(model.get(i, 0)[0])
-            i = model.iter_next(i)
-        return matches
-
 
 class EagerCompletingEntry(Gtk.Entry):
-    """Entry that substring-matches eagerly using a builtin ListStore-based Completion, and also accepts defaults."""
+    """Entry that substring-matches eagerly using a builtin ListStore-based
+    Completion, and also accepts defaults.
+    """
+
+    prevent_completion = False
 
     def __init__(self, *args):
         Gtk.Entry.__init__(self, *args)
-        self.set_completion(EagerCompletion())
         self.default_text = ''
         self.old_default_text = ''
-        self.connect("focus-out-event", self.completion_unfocused)
-        self.connect("key-press-event", self.handle_enter)
+        self.set_completion(EagerCompletion())
 
     def set_default_text(self, default_text):
         self.old_default_text = self.default_text
         self.default_text = default_text
         if not self.get_text() or self.get_text() == self.old_default_text:
             self.set_text(self.default_text)
-
-    def handle_enter(self, widget, event):
-        if event.keyval == EVENT_ENTER:
-            self.completion_unfocused(self, event)
-        return False
-
-    def completion_unfocused(self, widget, event, user_data=None):
-        if self.get_text():
-            matches = self.get_completion().matching_entries(self.get_text())
-            if matches and self.get_text() != matches[0]:
-                self.set_text(matches[0])
 
 
 class LedgerAmountEntry(Gtk.Grid):
