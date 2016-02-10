@@ -77,7 +77,7 @@ found."""
         matches = [ m.group(1) for m in matches if m ]
         if not matches:
             raise LedgerConfigurationError("LEDGER_FILE environment variable not set, and your .ledgerrc file does not contain a --file parameter.")
-        return os.path.abspath(os.path.expanduser(matches[0]))
+        return os.path.abspath(os.path.expanduser(matches[0].strip()))
     else:
         raise LedgerConfigurationError("LEDGER_FILE environment variable not set, and no \
 .ledgerrc file found.")
