@@ -72,7 +72,7 @@ found."""
     elif os.path.exists(ledgerrcpath):
         # hacky
         ledgerrc = open(ledgerrcpath).readlines()
-        pat = r"^--file\s+(\S*?)\s*$"
+        pat = r"^--file\s+(.*?)\s*$"
         matches = [ re.match(pat, m) for m in ledgerrc ]
         matches = [ m.group(1) for m in matches if m ]
         if not matches:
