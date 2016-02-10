@@ -72,12 +72,12 @@ found."""
     elif os.path.exists(ledgerrcpath):
         # hacky
         ledgerrc = open(ledgerrcpath).readlines()
-        pat = r"^--file\s+(.*)"
+        pat = r"^--file\s+(\S*?)\s*$"
         matches = [ re.match(pat, m) for m in ledgerrc ]
         matches = [ m.group(1) for m in matches if m ]
         if not matches:
             raise LedgerConfigurationError("LEDGER_FILE environment variable not set, and your .ledgerrc file does not contain a --file parameter.")
-        return os.path.abspath(os.path.expanduser(matches[0].strip()))
+        return os.path.abspath(os.path.expanduser(matches[0]))
     else:
         raise LedgerConfigurationError("LEDGER_FILE environment variable not set, and no \
 .ledgerrc file found.")
