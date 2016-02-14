@@ -735,7 +735,7 @@ class LedgerAmountEntry(Gtk.Grid):
         self.entry.set_alignment(1.0)
         self.attach(self.entry, 0, 0, 1, 1)
         self.attach(self.display, 1, 0, 1, 1)
-        self.display.set_xalign(1.0)
+        self.display.set_halign(Gtk.Align.END)
         self.display.set_justify(Gtk.Justification.RIGHT)
         self.set_column_spacing(4)
         self.donotreact = False
@@ -1013,7 +1013,7 @@ class EditableTransactionView(Gtk.Grid):
 
         tdatelabel = Gtk.Label("Transaction date")
         tdatelabel.set_hexpand(True)
-        tdatelabel.set_xalign(0)
+        tdatelabel.set_halign(Gtk.Align.START)
         container.attach(tdatelabel, 0, 0, 1, 1)
         self.when = NavigatableCalendar()
         self.when.set_hexpand(True)
