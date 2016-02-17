@@ -53,7 +53,7 @@ setup(
 	data_files = [
 		("/usr/share/applications", ["applications/%s.desktop" % p for p in programs]),
 	],
-	scripts=["bin/%s" % p for p in programs],
+	scripts=["bin/%s" % p for p in programs] + ["toport/sortpostings"],
 	keywords="accounting ledger ledger-cli",
 	requires=["ledger", "yahoo_finance"],
 	zip_safe=False,
