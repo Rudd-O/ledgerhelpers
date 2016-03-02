@@ -37,7 +37,7 @@ class QuoteSource(object):
 class DontQuote(QuoteSource):
 
     def __str__(self):
-        return "Skip quoting"
+        return "skip quoting"
 
     def get_quote(self, commodity, denominated_in):
         return None, None
