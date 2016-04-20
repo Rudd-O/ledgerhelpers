@@ -22,7 +22,7 @@ gi.require_version("Gtk", "3.0")
 from gi.repository import Gtk
 from gi.repository import Pango
 
-__version__ = "0.0.22"
+__version__ = "0.0.23"
 
 
 CURSOR_UP = "\033[F"
@@ -349,11 +349,12 @@ class Journal(GObject.GObject):
         f.close()
         self.reread_files()
 
-    def add_text_to_file(self, text):
+    def add_text_to_file(self, text, reload_journal=True):
         f = open(self.path, "a")
         print >> f, text,
         f.close()
-        self.reread_files()
+        if reload_journal:
+            self.reread_files()
 
     def add_text_to_file_async(self, text):
         f = open(self.path, "a")

@@ -221,7 +221,7 @@ class BuyApp(BuyWindow, common.EscapeHandlingMixin):
         self.reset_after_save()
 
     def save_transaction(self, text):
-        self.journal.add_text_to_file(text)
+        self.journal.add_text_to_file(text, reload_journal=False)
 
     def reset_after_save(self):
         self.what.set_text("")
