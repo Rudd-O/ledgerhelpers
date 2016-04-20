@@ -1,0 +1,8 @@
+* merge alignpostings from financial machine as alignpostings-cli
+* rename sortpostigns to sortpostings-cli
+* enhance parser so that sortpostings-cli and alignpostings-cli
+  can use the parser instead of regexps instead
+* add tests for sortpostings-cli and alignpostings-cli
+* make parsegmob output the transactions where the a/r accrual happens
+* figure out where to store bal, reg, and parsegmob, and parsemypay somewhere
+  perhaps they should be more than just scripts in the financial vm
