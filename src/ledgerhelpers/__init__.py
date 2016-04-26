@@ -22,7 +22,7 @@ gi.require_version("Gtk", "3.0")
 from gi.repository import Gtk
 from gi.repository import Pango
 
-__version__ = "0.0.24"
+__version__ = "0.0.25"
 
 
 CURSOR_UP = "\033[F"
@@ -337,7 +337,7 @@ class Journal(GObject.GObject):
     def generate_price_records(self, prices):
         return generate_price_records(prices)
 
-    def _add_text_to_file(self, text, reload_journal=True, in_background):
+    def _add_text_to_file(self, text, reload_journal, in_background):
         if not isinstance(text, basestring):
             text = "\n".join(text)
         f = open(self.path, "a")
