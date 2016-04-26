@@ -257,4 +257,4 @@ def main():
         "Hit ENTER or y to save it to the file, BACKSPACE or n to skip saving: "
     )
     if save:
-        journal.add_lines_to_file(lines)
+        journal.add_text_to_file(lines)

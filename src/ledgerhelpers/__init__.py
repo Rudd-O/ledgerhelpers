@@ -22,7 +22,7 @@ gi.require_version("Gtk", "3.0")
 from gi.repository import Gtk
 from gi.repository import Pango
 
-__version__ = "0.0.23"
+__version__ = "0.0.24"
 
 
 CURSOR_UP = "\033[F"
@@ -337,30 +337,23 @@ class Journal(GObject.GObject):
     def generate_price_records(self, prices):
         return generate_price_records(prices)
 
-    def add_lines_to_file(self, lines):
-        f = open(self.path, "a")
-        print >> f, "\n".join(lines),
-        f.close()
-        self.reread_files()
-
-    def add_lines_to_price_file(self, lines):
-        f = open(self.price_path, "a")
-        print >> f, "\n".join(lines),
-        f.close()
-        self.reread_files()
-
-    def add_text_to_file(self, text, reload_journal=True):
+    def _add_text_to_file(self, text, reload_journal=True, in_background):
+        if not isinstance(text, basestring):
+            text = "\n".join(text)
         f = open(self.path, "a")
         print >> f, text,
         f.close()
         if reload_journal:
-            self.reread_files()
+            if in_background:
+                self.reread_files_async()
+            else:
+                self.reread_files()
 
-    def add_text_to_file_async(self, text):
-        f = open(self.path, "a")
-        print >> f, text,
-        f.close()
-        self.reread_files_async()
+    def add_text_to_file(self, text, reload_journal=True):
+        return self._add_text_to_file(text, reload_journal, False)
+
+    def add_text_to_file_async(self, text, reload_journal=True):
+        return self._add_text_to_file(text, reload_journal, True)
 
 
 class Settings(dict):

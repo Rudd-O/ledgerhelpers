@@ -615,7 +615,7 @@ class UpdatePricesCommon(object):
         recs = list(self.gatherer.database.get_prices())
         if recs:
             lines = self.journal.generate_price_records(recs)
-            self.journal.add_lines_to_price_file(lines)
+            self.journal.add_text_to_price_file(lines, reload_journal=False)
 
     def output_errors(self):
         recs = list(self.gatherer.database.get_errors())
