@@ -337,7 +337,9 @@ class Journal(GObject.GObject):
     def generate_price_records(self, prices):
         return generate_price_records(prices)
 
-    def _add_text_to_file(self, text, reload_journal, in_background):
+    def _add_text_to_file(self, text, reload_journal, in_background, file=None):
+        if file is None:
+            file = self.path
         if not isinstance(text, basestring):
             text = "\n".join(text)
         f = open(self.path, "a")
@@ -354,6 +356,12 @@ class Journal(GObject.GObject):
 
     def add_text_to_file_async(self, text, reload_journal=True):
         return self._add_text_to_file(text, reload_journal, True)
+
+    def add_text_to_price_file(self, text, reload_journal=True):
+        return self._add_text_to_file(text, reload_journal, False, self.price_path)
+
+    def add_text_to_price_file_async(self, text, reload_journal=True):
+        return self._add_text_to_file(text, reload_journal, True, self.price_path)
 
 
 class Settings(dict):
