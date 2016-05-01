@@ -22,7 +22,7 @@ gi.require_version("Gtk", "3.0")
 from gi.repository import Gtk
 from gi.repository import Pango
 
-__version__ = "0.0.26"
+__version__ = "0.0.27"
 
 
 CURSOR_UP = "\033[F"
@@ -342,8 +342,9 @@ class Journal(GObject.GObject):
             file = self.path
         if not isinstance(text, basestring):
             text = "\n".join(text)
-        f = open(self.path, "a")
+        f = open(file, "a")
         print >> f, text,
+        f.flush()
         f.close()
         if reload_journal:
             if in_background:
