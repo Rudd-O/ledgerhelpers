@@ -130,7 +130,11 @@ class YahooFinanceCurrencies(YahooFinanceCommodities):
 def json_from_uri(uri):
     c = httplib.HTTPSConnection(urlparse.urlsplit(uri).netloc)
     c.request('GET', uri)
-    return json.loads(c.getresponse().read())
+    response = c.getresponse().read()
+    try:
+        return json.loads(response)
+    except ValueError:
+        raise ValueError("JSON object undecodable: %s" % response)
 
 
 class BitcoinCharts(QuoteSource):
