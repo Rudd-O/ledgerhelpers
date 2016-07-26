@@ -9,6 +9,9 @@ import ledgerhelpers as common
 from ledgerhelpers import debug
 
 
+IGNOREACCTS = ["Funding:*", "Income:*"]
+
+
 class Lot(object):
 
     def __init__(self, number, dates, price, amt, accts):
@@ -68,6 +71,7 @@ class Lots(object):
 
     def register(self, date, amount, price, account):
         l = (date, amount, price, str(account))
+        debug("Registering lot %s %s %s %s", *l)
         self.unfinished.append(l)
 
     def commit(self):
@@ -183,8 +187,6 @@ def main():
     assert gainslossesacct, "Not an account: %s" % gainslossesacct
     s["last_gainslosses_account"] = gainslossesacct
 
-    ignoreaccts = ["Funding:Stock vesting"]
-
     target_amount = common.prompt_for_amount(
         sys.stdin, sys.stdout,
         "How many units of what commodity?", ledger.Amount("$ 1")
@@ -203,7 +205,7 @@ def main():
     for post in journal.query(""):
         if post.xact != last_xact:
             for post in post.xact.posts():
-                if str(post.account) in ignoreaccts:
+                if common.matches(str(post.account), IGNOREACCTS):
                     continue
                 if str(post.amount.commodity) == "$":
                     continue

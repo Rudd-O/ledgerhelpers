@@ -6,6 +6,7 @@ import codecs
 import collections
 import datetime
 import fcntl
+import fnmatch
 import ledger
 import re
 import os
@@ -49,6 +50,15 @@ def debug_time(kallable):
             end = time.time() - start
             print "Ran %s in %.3f seconds" % (kallable, end)
     return f
+
+
+def matches(string, options):
+    """Returns True if the string case-insensitively glob-matches any of the
+    globs present in options."""
+    for option in options:
+        if fnmatch.fnmatch(string, option):
+            return True
+    return False
 
 
 class LedgerConfigurationError(Exception):
