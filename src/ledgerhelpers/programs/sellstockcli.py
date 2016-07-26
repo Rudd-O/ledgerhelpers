@@ -3,7 +3,6 @@
 import datetime
 import itertools
 import ledger
-import os
 import sys
 import ledgerhelpers as common
 from ledgerhelpers import debug
