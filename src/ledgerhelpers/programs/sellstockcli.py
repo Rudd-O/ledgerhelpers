@@ -212,7 +212,15 @@ def main():
                 if str(post.amount.commodity) != str(target_amount.commodity):
                     continue
                 trueamount = ledger.Amount(post.amount.strip_annotations())
-                lotprice = post.amount.price() / trueamount
+                try:
+                    lotprice = post.amount.price() / trueamount
+                except TypeError, e:
+                    debug(
+                        "Post %s with lot %s ignored because it lacks a price",
+                        post.xact.payee,
+                        post.amount
+                    )
+                    continue
                 account = post.account
                 date = post.date
                 all_lots.register(date, trueamount, lotprice, account)
