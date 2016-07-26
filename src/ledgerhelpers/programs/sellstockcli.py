@@ -1,33 +1,31 @@
 #!/usr/bin/env python
 
 import datetime
-import itertools
+import fnmatch
 import ledger
+import re
+import subprocess
 import sys
 import ledgerhelpers as common
-from ledgerhelpers import debug
-
-
-IGNOREACCTS = ["Funding:*", "Income:*"]
 
 
 class Lot(object):
 
-    def __init__(self, number, dates, price, amt, accts):
+    def __init__(self, number, date, amount, acct):
         self.number = number
-        self.dates_seen = [str(date) for date in dates]
-        self.amount = ledger.Amount(str(amt) + " {%s}" % price)
-        self.price = self.amount.price() / amt
-        self.amount = amt
-        self.accounts_seen = [str(a) for a in accts]
+        self.date = date
+        self.amount = amount
+        quantity = ledger.Amount(amount.strip_annotations())
+        self.price = self.amount.price() / quantity
+        self.account = acct
 
     def __str__(self):
         return (
-            "<Lot %s of %s at price %s in accts"
-            "%s and seen on dates %s>"
+            "<Lot %s of %s at price %s in acct "
+            "%s with date %s>"
         ) % (
-            self.number, self.amount, self.price, self.accounts_seen,
-            self.dates_seen
+            self.number, self.amount, self.price, self.account,
+            self.date
         )
 
 
@@ -47,114 +45,71 @@ class Lots(object):
     def __iter__(self):
         return iter(sorted(
             self.lots,
-            key=lambda l: "%6s%s" % (l.number, l.dates_seen[-1])
+            key=lambda l: "%s" % (l.date,)
         ))
 
-    def locate_lot(self, price, account, amount=None):
-        thelot = [
-            l for l in self
-            if (str(l.price) == str(price)) and
-            (l.accounts_seen[-1] == account)
-        ]
-        if len(thelot) > 1 and amount is not None:
-            srch = [l for l in thelot if l.amount == amount]
-            if len(srch) > 0:
-                thelot = srch
-        assert len(thelot) < 2, [str(x) for x in thelot]
-        return thelot[0]
+    def parse_ledger_bal(self, text):
+        """Demands '--balance-format=++ %(account)\n%(amount)\n' format.
+        Demands '--date-format=%Y-%m-%d' date format."""
+        lines = [x.strip() for x in text.splitlines() if x.strip()]
+        account = None
+        for line in lines:
+            if line.startswith("++ "):
+                account = line[3:]
+            else:
+                amount = ledger.Amount(line)
+                date = re.findall(r'\[\d\d\d\d-\d\d-\d\d]', line)
+                assert len(date) < 2
+                if date:
+                    date = common.parse_date(date[0][1:-1])
+                else:
+                    date = None
+                try:
+                    lot = Lot(self.nextnum(),
+                            date,
+                            amount,
+                            account)
+                    self.lots.append(lot)
+                except TypeError:
+                    # At this point, we know the commodity does not have a price.
+                    # So we ignore this.
+                    pass
 
     def nextnum(self):
         if not self.lots:
             return 1
         return max([l.number for l in self.lots]) + 1
 
-    def register(self, date, amount, price, account):
-        l = (date, amount, price, str(account))
-        debug("Registering lot %s %s %s %s", *l)
-        self.unfinished.append(l)
-
-    def commit(self):
-        for _, unfinished in itertools.groupby(
-            self.unfinished, lambda x: str(x[2])
-        ):
-            unfinished = list(unfinished)
-            inputs = [l for l in unfinished if l[1] < 0]
-            outputs = [l for l in unfinished if l not in inputs]
-            for i in inputs[:]:
-                debug("Registering input %s", i)
-                _, iam, ip, iac = i
-                ilot = self.locate_lot(ip, iac, -iam)
-                debug("Corresponding input lot located %s", ilot)
-                debug("reducing lot amount by %s", iam)
-                ilot.amount += iam
-                debug("Detecting which lots it should output to")
-                for o in outputs[:]:
-                    debug("Trying lot %s", o)
-                    od, oam, op, oac = o
-                    toinc = min([-iam, oam])
-                    debug("Must increment lot by %s", toinc)
-                    try:
-                        olot = self.locate_lot(op, oac)
-                        debug("Located target lot %s", olot)
-                        olot.dates_seen += [od]
-                        olot.amount += toinc
-                        debug("Lot incremented by %s", toinc)
-                    except IndexError:
-                        olot = Lot(ilot.number,
-                                   ilot.dates_seen + [od],
-                                   op,
-                                   toinc,
-                                   ilot.accounts_seen + [oac])
-                        debug("Created new target lot %s", olot)
-                        self.lots.append(olot)
-                    iam += toinc
-                    if toinc == oam:
-                        debug("This output is spent %s", o)
-                        outputs.remove(o)
-                    else:
-                        debug("Reducing this output for future use %s", o)
-                        outputs[outputs.index(o)] = (od, oam - toinc, op, oac)
-                    if iam == 0:
-                        break
-                if ilot.amount == 0:
-                    debug("Lot reached zero, removing %s", ilot)
-                    self.lots.remove(ilot)
-                inputs.remove(i)
-            for o in outputs[:]:
-                debug("Registering output %s", o)
-                od, oam, op, oac = o
-                olot = Lot(self.nextnum(),
-                           [od],
-                           op,
-                           oam,
-                           [oac])
-                self.lots.append(olot)
-                outputs.remove(o)
-            assert not inputs, inputs
-            assert not outputs, outputs
-        self.unfinished = []
+    def first_lot_by_commodity(self, commodity):
+        return [s for s in self if str(s.amount.commodity) == str(commodity)][0]
 
     def subtract(self, amount):
         lots = []
         subtracted = amount - amount
         while subtracted < amount:
             try:
-                l = self[0]
+                l = self.first_lot_by_commodity(amount.commodity)
             except IndexError:
                 raise NotEnough(amount - subtracted)
-            to_reduce = min([l.amount, amount - subtracted])
-            if to_reduce == l.amount:
+            to_reduce = min([l.amount.strip_annotations(), amount - subtracted])
+            if str(to_reduce) == str(l.amount.strip_annotations()):
                 lots.append(l)
                 self.lots.remove(l)
             else:
-                l.amount -= to_reduce
+                l.amount -= to_reduce.to_long()
                 lots.append(Lot(l.number,
-                                l.dates_seen,
-                                l.price,
-                                to_reduce,
-                                l.accounts_seen))
+                                l.date,
+                                l.amount - l.amount + to_reduce.to_long(),
+                                l.account))
             subtracted += to_reduce
         return lots
+
+
+def matches(string, options):
+    for option in options:
+        if fnmatch.fnmatch(string, option):
+            return True
+    return False
 
 
 def main():
@@ -200,31 +155,14 @@ def main():
     )
 
     all_lots = Lots()
-    last_xact = None
-    for post in journal.query(""):
-        if post.xact != last_xact:
-            for post in post.xact.posts():
-                if common.matches(str(post.account), IGNOREACCTS):
-                    continue
-                if str(post.amount.commodity) == "$":
-                    continue
-                if str(post.amount.commodity) != str(target_amount.commodity):
-                    continue
-                trueamount = ledger.Amount(post.amount.strip_annotations())
-                try:
-                    lotprice = post.amount.price() / trueamount
-                except TypeError, e:
-                    debug(
-                        "Post %s with lot %s ignored because it lacks a price",
-                        post.xact.payee,
-                        post.amount
-                    )
-                    continue
-                account = post.account
-                date = post.date
-                all_lots.register(date, trueamount, lotprice, account)
-            all_lots.commit()
-            last_xact = post.xact
+    lots_text = subprocess.check_output([
+        'ledger', 'bal',
+        '--lots', '--lot-dates', '--lot-prices',
+        '--date-format=%Y-%m-%d', '--sort=date',
+        '--balance-format=++ %(account)\n%(amount)\n',
+        saleacct
+    ])
+    all_lots.parse_ledger_bal(lots_text)
 
     print "=========== Read ==========="
     for l in all_lots:
@@ -241,10 +179,20 @@ def main():
         print l
 
     lines = []
+    tpl = "%s {%s}%s @ %s"
+    datetpl = ' [%s]'
     for l in lots_produced:
+        m = -1 * l.amount
+        if m.commodity.details.date:
+            datetext = datetpl % m.commodity.details.date.strftime("%Y-%m-%d")
+        else:
+            datetext = ''
         lines.append((
-            l.accounts_seen[-1],
-            ["%s {%s} @ %s" % (-1 * l.amount, l.price, target_sale_price)]
+            l.account,
+            [tpl % (m.strip_annotations(),
+                    m.commodity.details.price,
+                    datetext,
+                    target_sale_price)]
         ))
         diff = (l.price - target_sale_price) * l.amount
         lines.append((gainslossesacct, [diff]))
