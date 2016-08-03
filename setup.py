@@ -2,6 +2,7 @@
 
 from setuptools import setup
 import os
+import platform
 
 dir = os.path.dirname(__file__)
 path_to_main_file = os.path.join(dir, "src/ledgerhelpers/__init__.py")
@@ -35,6 +36,13 @@ programs = [
     "addtrans",
 ]
 
+# https://github.com/Rudd-O/ledgerhelpers/issues/3
+# Don't write to /usr/share/applications on OS X to work around the
+# 'System Integrity Protection'.
+data_files = [
+	("/usr/share/applications", ["applications/%s.desktop" % p for p in programs]),
+] if platform.system() != 'Darwin' else []
+
 setup(
 	name='ledgerhelpers',
 	version=version,
@@ -50,9 +58,7 @@ setup(
 	classifiers = classifiers,
 	packages=["ledgerhelpers",
               "ledgerhelpers.programs"],
-	data_files = [
-		("/usr/share/applications", ["applications/%s.desktop" % p for p in programs]),
-	],
+	data_files = data_files,
 	scripts=["bin/%s" % p for p in programs] + ["toport/sortpostings"],
 	keywords="accounting ledger ledger-cli",
 	requires=["ledger", "yahoo_finance"],
