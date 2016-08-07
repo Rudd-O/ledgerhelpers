@@ -96,10 +96,11 @@ class Lots(object):
                 lots.append(l)
                 self.lots.remove(l)
             else:
-                l.amount -= to_reduce.to_long()
+                l.amount -= to_reduce.number()
+                new_amount = l.amount - l.amount + to_reduce.number()
                 lots.append(Lot(l.number,
                                 l.date,
-                                l.amount - l.amount + to_reduce.to_long(),
+                                new_amount,
                                 l.account))
             subtracted += to_reduce
         return lots
