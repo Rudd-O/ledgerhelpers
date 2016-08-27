@@ -143,9 +143,13 @@ def generate_record(title, date, cleared_date, accountamounts, validate=False):
         return "( " + " + ".join(str(amt) for amt in amts) + " )"
 
     lines = [""]
-    lines.append("%s%s %s" % (date,
-                                ("=%s *" % cleared_date if cleared_date else ""),
-                                title))
+    if cleared_date:
+        if cleared_date != date:
+            lines.append("%s=%s * %s" % (date, cleared_date, title))
+        else:
+            lines.append("%s * %s" % (date, title))
+    else:
+        lines.append("%s %s" % (date, title))
 
     try:
         longestaccount = max(list(len(a[0]) for a in accountamounts))

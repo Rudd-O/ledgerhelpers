@@ -34,3 +34,14 @@ class TestGenerateRecord(T):
     expenses
 
 """.splitlines())
+
+    def test_no_cleared_date_when_cleared_date_not_supplied(self):
+        cases = [
+            ("2014-01-01 x", (datetime.date(2014, 1, 1), None)),
+            ("2014-01-01 * x", (datetime.date(2014, 1, 1), datetime.date(2014, 1, 1))),
+            ("2014-01-01=2015-01-01 * x", (datetime.date(2014, 1, 1), datetime.date(2015, 1, 1))),
+        ]
+        accountamounts = [("assets", ["56 CHF"]), ("expenses", [""])]
+        for expected_line, (date, cleared) in cases:
+            res = m.generate_record("x", date, cleared, accountamounts)[1]
+            self.assertEqual(res, expected_line)
