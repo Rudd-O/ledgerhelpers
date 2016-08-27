@@ -200,8 +200,8 @@ def main():
     totalsale = target_sale_price * sum(
         l.amount.number() for l in lots_produced
     )
-    lines.append((saleacct, [totalsale - commission]))
-    lines.append((commissionsaccount, [commission]))
+    lines.append((saleacct, totalsale - commission))
+    lines.append((commissionsaccount, commission))
 
     lines = journal.generate_record(
         "Sale of %s" % (target_amount),

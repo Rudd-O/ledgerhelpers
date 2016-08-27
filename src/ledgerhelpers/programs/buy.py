@@ -184,8 +184,8 @@ class BuyApp(BuyWindow, common.EscapeHandlingMixin):
             self.when.get_datetime_date(),
             self.clearing_when.get_datetime_date() if self.clearing.get_active() else None,
             [
-                (self.asset.get_text(), [negamount]),
-                (self.expense.get_text(), [amount]),
+                (self.asset.get_text(), negamount),
+                (self.expense.get_text(), amount),
             ]
         )
 

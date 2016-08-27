@@ -133,16 +133,16 @@ def generate_record(title, date, cleared_date, accountamounts, validate=False):
     title is a string describing the title of the transaction
     cleared_date is the date when the transaction cleared, or None
     accountamounts is a list of:
-    (account, [amounts])
+    (account, amount)
     """
-    def resolve_amounts(amts):
-        if len(amts) == 0:
+    def stramt(amt):
+        assert type(amt) not in (tuple, list)
+        if not amt:
             return ""
-        if len(amts) == 1:
-            return str(amts[0])
-        return "( " + " + ".join(str(amt) for amt in amts) + " )"
+        return str(amt).strip()
 
     lines = [""]
+    linesemptyamts = []
     if cleared_date:
         if cleared_date != date:
             lines.append("%s=%s * %s" % (date, cleared_date, title))
@@ -152,19 +152,19 @@ def generate_record(title, date, cleared_date, accountamounts, validate=False):
         lines.append("%s %s" % (date, title))
 
     try:
-        longestaccount = max(list(len(a[0]) for a in accountamounts))
-        longestamount = max(list(len(resolve_amounts(a[1])) for a in accountamounts))
+        longest_acct = max(list(len(a) for a, _ in accountamounts))
+        longest_amt = max(list(len(stramt(am)) for _, am in accountamounts))
     except ValueError:
-        longestaccount = 30
-        longestamount = 30
-    pattern = "    %-" + str(longestaccount) + "s    %" + str(longestamount) + "s"
-    pattern2 = "    %-" + str(longestaccount) + "s"
-    for account, amounts in accountamounts:
-        amnts = resolve_amounts(amounts)
-        if amnts:
-            lines.append(pattern % (account, amnts))
+        longest_acct = 30
+        longest_amt = 30
+    pattern = "    %-" + str(longest_acct) + "s    %" + str(longest_amt) + "s"
+    pattern2 = "    %-" + str(longest_acct) + "s"
+    for account, amount in accountamounts:
+        if stramt(amount):
+            lines.append(pattern % (account, stramt(amount)))
         else:
-            lines.append(pattern2 % (account,))
+            linesemptyamts.append(pattern2 % (account,))
+    lines = lines + linesemptyamts
     lines.append("")
 
     if validate:
@@ -1256,7 +1256,7 @@ class EditableTransactionView(Gtk.Grid):
                     entries.append((account, p))
             return entries
 
-        accountamounts = [(x, [y]) for x, y in get_entries()]
+        accountamounts = [(x, y) for x, y in get_entries()]
         return title, date, clearing, accountamounts
 
     def validate(self, grab_focus=False):

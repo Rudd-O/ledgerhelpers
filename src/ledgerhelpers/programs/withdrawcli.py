@@ -52,8 +52,8 @@ def main():
     )
 
     lines = journal.generate_record("Withdrawal", when, None, [
-        (asset1, [-1 * amount1]),
-        (asset2, [amount2]),
+        (asset1, -1 * amount1),
+        (asset2, amount2),
     ])
     print "========== Record =========="
     print "\n".join(lines)

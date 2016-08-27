@@ -22,8 +22,8 @@ class TestGenerateRecord(T):
         date = datetime.date(2014, 1, 1)
         cleared_date = None
         accountamounts = [
-            ("assets", ["56 CHF"]),
-            ("expenses", [""]),
+            ("assets", "56 CHF"),
+            ("expenses", ""),
         ]
         res = m.generate_record(title, date, cleared_date, accountamounts)
         self.assertListEqual(
@@ -41,7 +41,20 @@ class TestGenerateRecord(T):
             ("2014-01-01 * x", (datetime.date(2014, 1, 1), datetime.date(2014, 1, 1))),
             ("2014-01-01=2015-01-01 * x", (datetime.date(2014, 1, 1), datetime.date(2015, 1, 1))),
         ]
-        accountamounts = [("assets", ["56 CHF"]), ("expenses", [""])]
+        accountamounts = [("assets", "56 CHF"), ("expenses", "")]
         for expected_line, (date, cleared) in cases:
             res = m.generate_record("x", date, cleared, accountamounts)[1]
             self.assertEqual(res, expected_line)
+
+    def test_empty_record_auto_goes_last(self):
+        accountamounts = [("expenses", ""), ("assets", "56 CHF")]
+        res = m.generate_record("x", datetime.date(2014, 1, 1),
+                                None, accountamounts)
+        self.assertListEqual(
+            res,
+            """
+2014-01-01 x
+    assets      56 CHF
+    expenses
+
+""".splitlines())
