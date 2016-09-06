@@ -47,14 +47,14 @@ class TestGenerateRecord(T):
             self.assertEqual(res, expected_line)
 
     def test_empty_record_auto_goes_last(self):
-        accountamounts = [("expenses", ""), ("assets", "56 CHF")]
+        accountamounts = [("expenses", ""), ("assets:cash", "56 CHF")]
         res = m.generate_record("x", datetime.date(2014, 1, 1),
                                 None, accountamounts)
         self.assertListEqual(
             res,
             """
 2014-01-01 x
-    assets      56 CHF
+    assets:cash    56 CHF
     expenses
 
 """.splitlines())

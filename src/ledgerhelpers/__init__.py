@@ -163,7 +163,7 @@ def generate_record(title, date, cleared_date, accountamounts, validate=False):
         if stramt(amount):
             lines.append(pattern % (account, stramt(amount)))
         else:
-            linesemptyamts.append(pattern2 % (account,))
+            linesemptyamts.append((pattern2 % (account,)).rstrip())
     lines = lines + linesemptyamts
     lines.append("")
 
