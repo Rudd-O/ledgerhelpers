@@ -397,6 +397,7 @@ class DateEntry(Gtk.HBox):
         self.entry.connect('changed', self._on_entry__changed)
         self.entry.connect('activate', self._on_entry__activate)
         self.entry.connect('key-press-event', self._on_entry__key_press_event)
+        self.entry.set_placeholder_text("YYYY-MM-DD")
         self.pack_start(self.entry, False, False, 0)
         self.entry.show()
 
