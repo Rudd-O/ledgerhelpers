@@ -61,7 +61,7 @@ class EditableTransactionView(Gtk.Grid):
         self.payee.set_hexpand(True)
         self.payee.set_activates_default(True)
         self.payee.set_size_request(300, -1)
-        self.payee.set_placeholder_text("Enter payee or description")
+        self.payee.set_placeholder_text("Payee or description")
         self.attach(self.payee, 1, 0, 1, 1)
         self.payee.connect("changed", self.payee_changed)
         self.payee.connect("changed", self.child_changed)
@@ -203,7 +203,7 @@ class EditableTransactionView(Gtk.Grid):
         account.set_activates_default(True)
         account.get_completion().set_model(self.accounts_for_completion)
         account.set_placeholder_text(
-            "Enter account (or some characters to trigger completion)"
+            "Account (a few characters trigger completion)"
         )
         hid3 = account.connect("changed", self.child_changed)
         account._handler_ids = [hid3]
