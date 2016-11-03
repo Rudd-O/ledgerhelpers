@@ -689,6 +689,9 @@ class LedgerAmountEntry(Gtk.Grid):
     def do_changed(self):
         pass
 
+    def set_placeholder_text(self, text):
+        self.entry.set_placeholder_text(text)
+
     def __init__(self, *args):
         Gtk.Grid.__init__(self)
         self.amount = None
