@@ -54,6 +54,7 @@ class BuyWindow(Gtk.Window):
 
         self.when = de.DateEntry()
         grid.attach(self.when, 1, row, 1, 1)
+        self.when.set_activates_default(True)
 
         row += 1
 
@@ -65,6 +66,7 @@ class BuyWindow(Gtk.Window):
         self.clearing.connect("toggled", process_toggle)
         self.clearing_when.set_sensitive(self.clearing.get_active())
         grid.attach(self.clearing_when, 1, row, 1, 1)
+        self.clearing_when.set_activates_default(True)
 
         row += 1
 

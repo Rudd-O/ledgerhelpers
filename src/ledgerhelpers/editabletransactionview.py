@@ -32,6 +32,7 @@ class EditableTransactionView(Gtk.Grid):
         container.set_column_spacing(8)
 
         self.when = DateEntry()
+        self.when.set_activates_default(True)
         self.when.set_hexpand(False)
         container.attach(self.when, 0, 0, 1, 1)
         self.when.connect("changed", self.child_changed)
@@ -39,6 +40,7 @@ class EditableTransactionView(Gtk.Grid):
         self.clearing = Gtk.CheckButton()
         container.attach(self.clearing, 1, 0, 1, 1)
         self.clearing_when = DateEntry()
+        self.clearing_when.set_activates_default(True)
         self.clearing_when.set_hexpand(False)
         self.clearing_when.connect("changed", self.child_changed)
 

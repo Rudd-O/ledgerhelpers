@@ -504,6 +504,9 @@ class DateEntry(Gtk.HBox):
 
     # Public API
 
+    def set_activates_default(self, val):
+        return self.entry.set_activates_default(val)
+
     def set_date(self, date):
         """Sets the date.
         :param date: date to set
