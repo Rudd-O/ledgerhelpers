@@ -128,7 +128,7 @@ class _DateEntryPopup(Gtk.Window):
         frame.show()
 
         vbox = Gtk.VBox()
-        vbox.set_border_width(6)
+        vbox.set_border_width(12)
         frame.add(vbox)
         vbox.show()
         self._vbox = vbox
@@ -142,7 +142,7 @@ class _DateEntryPopup(Gtk.Window):
         self.calendar.show()
 
         buttonbox = Gtk.HButtonBox()
-        buttonbox.set_border_width(6)
+        buttonbox.set_border_width(12)
         buttonbox.set_layout(Gtk.ButtonBoxStyle.SPREAD)
         vbox.pack_start(buttonbox, False, False, 0)
         buttonbox.show()
@@ -387,10 +387,9 @@ class DateEntry(Gtk.HBox):
         self._popping_down = False
         self._old_date = None
 
-        # bootstrap problems, kiwi.ui.widgets.entry imports dateentry
-        # we need to use a proxy entry because we want the mask
         self.entry = Gtk.Entry()
         self.entry.set_max_length(10)
+        self.entry.set_width_chars(10)
         self.entry.set_overwrite_mode(True)
         self.entry.set_tooltip_text(
             self.__doc__.replace("\n    ", "\n").strip()
@@ -538,6 +537,19 @@ class DateEntry(Gtk.HBox):
         if date == ValueUnset:
             date = None
         return date
+
+    def follow(self, other_calendar):
+        self.followed = other_calendar
+        self.followed_last_value = other_calendar.get_date()
+
+        def copy_when(other_calendar, *args):
+            if (
+                self.get_date() == self.followed_last_value or
+                other_calendar.get_date() > self.get_date()
+            ):
+                self.set_date(other_calendar.get_date())
+            self.followed_last_value = other_calendar.get_date()
+        other_calendar.connect("changed", copy_when)
 
 
 class TestWindow(Gtk.Window):

@@ -140,6 +140,7 @@ class BuyApp(BuyWindow, common.EscapeHandlingMixin):
             self.clearing.set_active(
                 self.preferences.get("default_to_clearing", True)
             )
+            # FIXME: copy me to addtrans!
             self.when.set_datetime_date(
                 self.preferences.get("last_date", datetime.date.today())
             )

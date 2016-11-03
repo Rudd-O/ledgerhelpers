@@ -1,10 +1,14 @@
 #!/usr/bin/env python
 
-import ledgerhelpers as common
+import datetime
+
 from gi.repository import GObject
 import gi; gi.require_version("Gtk", "3.0")
 from gi.repository import Gtk
 from gi.repository import Pango
+
+import ledgerhelpers as common
+import ledgerhelpers.editabletransactionview as ed
 
 
 class AddTransWindow(Gtk.Window, common.EscapeHandlingMixin):
@@ -20,7 +24,7 @@ class AddTransWindow(Gtk.Window, common.EscapeHandlingMixin):
 
         row = 0
 
-        self.transholder = common.EditableTransactionView()
+        self.transholder = ed.EditableTransactionView()
         self.transholder.set_column_spacing(8)
         self.transholder.set_row_spacing(8)
         grid.attach(self.transholder, 0, row, 2, 1)
@@ -60,6 +64,7 @@ class AddTransApp(AddTransWindow, common.EscapeHandlingMixin):
         AddTransWindow.__init__(self)
         self.journal = journal
         self.preferences = preferences
+        self.successfully_loaded_accounts_and_commodities = False
 
         self.accounts = []
         self.commodities = dict()
@@ -73,6 +78,9 @@ class AddTransApp(AddTransWindow, common.EscapeHandlingMixin):
                                   lambda _: self.emit('delete-event', None))
         self.add_button.connect("clicked",
                                 lambda _: self.process_transaction())
+        self.transholder.set_transaction_date(
+            self.preferences.get("last_date", datetime.date.today())
+        )
         self.transholder.connect(
             "payee-changed",
             self.payee_changed
@@ -85,6 +93,7 @@ class AddTransApp(AddTransWindow, common.EscapeHandlingMixin):
         self.add_button.set_sensitive(False)
         self.transholder.title_grab_focus()
         self.journal.reread_files_async()
+        self.connect("delete-event", lambda _, _a: self.save_preferences())
 
     @common.debug_time
     def journal_loaded(self, journal):
@@ -100,6 +109,7 @@ class AddTransApp(AddTransWindow, common.EscapeHandlingMixin):
         self.transholder.set_default_commodity_getter(
             self.get_commodity_for_account
         )
+        self.successfully_loaded_accounts_and_commodities = True
 
     def journal_load_failed(self, journal, e):
         common.FatalError(
@@ -167,6 +177,22 @@ class AddTransApp(AddTransWindow, common.EscapeHandlingMixin):
         self.transholder.clear()
         self.transholder.title_grab_focus()
         self.status.set_text("Transaction saved")
+
+    def save_preferences(self):
+        if not self.successfully_loaded_accounts_and_commodities:
+            return
+        self.preferences["default_to_clearing"] = (
+            self.transholder.clearing.get_active()
+        )
+        if self.transholder.when.get_date() == datetime.date.today():
+            del self.preferences["last_date"]
+        elif not self.transholder.when.get_date():
+            del self.preferences["last_date"]
+        else:
+            self.preferences["last_date"] = (
+                self.transholder.when.get_date()
+            )
+        self.preferences.persist()
 
 
 def main():
