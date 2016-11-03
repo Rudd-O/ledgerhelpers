@@ -78,9 +78,8 @@ class AddTransApp(AddTransWindow, common.EscapeHandlingMixin):
                                   lambda _: self.emit('delete-event', None))
         self.add_button.connect("clicked",
                                 lambda _: self.process_transaction())
-        self.transholder.set_transaction_date(
-            self.preferences.get("last_date", datetime.date.today())
-        )
+        date = self.preferences.get("last_date", datetime.date.today())
+        self.transholder.set_transaction_date(date)
         self.transholder.connect(
             "payee-changed",
             self.payee_changed
@@ -184,9 +183,7 @@ class AddTransApp(AddTransWindow, common.EscapeHandlingMixin):
         self.preferences["default_to_clearing"] = (
             self.transholder.clearing.get_active()
         )
-        if self.transholder.when.get_date() == datetime.date.today():
-            del self.preferences["last_date"]
-        elif not self.transholder.when.get_date():
+        if self.transholder.when.get_date() in (datetime.date.today(), None):
             del self.preferences["last_date"]
         else:
             self.preferences["last_date"] = (

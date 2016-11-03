@@ -636,60 +636,6 @@ EVENT_TAB = 65289
 EVENT_SHIFTTAB = 65056
 
 
-class NavigatableCalendar(Gtk.Calendar):
-
-    def __init__(self, *args):
-        Gtk.Calendar.__init__(self, *args)
-        self.followed = None
-        self.followed_last_value = None
-        self.connect("key-press-event", self.keyboard_nav)
-        self.connect("day-selected", self.process_select_day)
-
-    def set_datetime_date(self, date):
-        if isinstance(date, basestring):
-            date = datetime.datetime.strptime(date_string, "%Y-%m-%d").date()
-        if self.followed and self.followed.get_datetime_date() > date:
-            date = self.followed.get_datetime_date()
-
-        self.select_month(date.month - 1, date.year)
-        self.select_day(date.day)
-
-    def process_select_day(self, *args):
-        if self.followed and self.followed.get_datetime_date() > self.get_datetime_date():
-            self.set_datetime_date(self.followed.get_datetime_date())
-
-    def get_datetime_date(self):
-        return datetime.date(self.props.year,
-                             self.props.month+1, self.props.day)
-
-    def keyboard_nav(self, cal, event, user_data=None):
-        c = cal.get_datetime_date()
-        if event.keyval == EVENT_PLUS:
-            n = c + datetime.timedelta(1)
-            cal.set_datetime_date(n)
-            return True
-        elif event.keyval == EVENT_MINUS:
-            n = c - datetime.timedelta(1)
-            cal.set_datetime_date(n)
-            return True
-        elif event.keyval == EVENT_PAGEUP:
-            cal.set_datetime_date(add_months(c, -1))
-            return True
-        elif event.keyval == EVENT_PAGEDOWN:
-            cal.set_datetime_date(add_months(c, 1))
-            return True
-        return False
-
-    def follow(self, other_calendar):
-        self.followed = other_calendar
-        self.followed_last_value = other_calendar.get_datetime_date()
-        def copy_when(other_calendar, *args):
-            if self.get_datetime_date() == self.followed_last_value or other_calendar.get_datetime_date() > self.get_datetime_date():
-                self.set_datetime_date(other_calendar.get_datetime_date())
-            self.followed_last_value = other_calendar.get_datetime_date()
-        other_calendar.connect("day-selected", copy_when)
-
-
 class EagerCompletion(Gtk.EntryCompletion):
     """Completion class that substring matches within a builtin ListStore."""
 
