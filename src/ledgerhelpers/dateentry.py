@@ -65,7 +65,7 @@ def next_day(date):
     return date + datetime.timedelta(1)
 
 
-def according_to_keyval(keyval, date, skip=""):
+def _according_to_keyval(keyval, state, date, skip="", in_editbox=False):
     if (keyval in (Gdk.KEY_Page_Up, Gdk.KEY_KP_Page_Up)):
         if date:
             return True, prev_month(date)
@@ -90,12 +90,18 @@ def according_to_keyval(keyval, date, skip=""):
             return True, next_day(date)
         else:
             return True, None
-    if (keyval in (Gdk.KEY_Home, Gdk.KEY_KP_Home)):
+    if (
+        keyval in (Gdk.KEY_Home, Gdk.KEY_KP_Home) and
+        (not in_editbox or state & Gdk.ModifierType.SHIFT_MASK)
+    ):
         if date:
             return True, beginning_of_month(date)
         else:
             return True, None
-    if (keyval in (Gdk.KEY_End, Gdk.KEY_KP_End)):
+    if (
+        keyval in (Gdk.KEY_End, Gdk.KEY_KP_End) and
+        (not in_editbox or state & Gdk.ModifierType.SHIFT_MASK)
+    ):
         if date:
             return True, end_of_month(date)
         else:
@@ -203,7 +209,8 @@ class _DateEntryPopup(Gtk.Window):
              state == Gdk.ModifierType.MOD1_MASK)):
             self.popdown()
             return True
-        processed, new_date = according_to_keyval(keyval, self.get_date())
+        processed, new_date = _according_to_keyval(keyval, state,
+                                                   self.get_date())
         if processed and new_date:
             self.set_date(new_date)
         return processed
@@ -355,12 +362,12 @@ class DateEntry(Gtk.HBox):
     There are a number of cool combos you can use, whether in the text box
     or in the date picker popup:
 
-    * Plus: next day
-    * Minus: previous day
-    * Page Up: previous month
-    * Page Down : next month
-    * End: end of the month
-    * Home: beginning of the month
+    * Minus:\t\tprevious day
+    * Plus:\t\tnext day
+    * Page Up:\tprevious month
+    * Page Down:\tnext month
+    * Home:\t\tbeginning of the month  (if textbox is focused, Shift+Home)
+    * End:\t\tend of the month (if textbox is focused, Shift+End)
 
     In the date picker popup, hitting Enter, or Escape, or Alt+Up after
     selecting a date (making it blue with a click or with the Space bar)
@@ -434,9 +441,11 @@ class DateEntry(Gtk.HBox):
             skip_minus = "minus"
         if self.entry.get_property("cursor-position") in (4, 7):
             skip_minus = "minus"
-        processed, new_date = according_to_keyval(event.keyval,
-                                                  self.get_date(),
-                                                  skip=skip_minus)
+        processed, new_date = _according_to_keyval(keyval,
+                                                   state,
+                                                   self.get_date(),
+                                                   skip=skip_minus,
+                                                   in_editbox=True)
         if processed and new_date:
             self.set_date(new_date)
         return processed
