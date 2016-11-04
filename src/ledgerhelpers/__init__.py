@@ -239,6 +239,7 @@ class Journal(GObject.GObject):
     }
 
     __name__ = "Journal"
+    _accounts_and_last_commodities = None
 
     def __init__(self):
         GObject.GObject.__init__(self)
@@ -292,6 +293,10 @@ class Journal(GObject.GObject):
             self.session = session
             self.journal = journal
             self.internal_parsing = internal_parsing
+
+            # Now collect accounts and last commodities.
+            self._harvest_accounts_and_last_commodities()
+
             GObject.idle_add(lambda: self.emit("loaded"))
         except Exception as e:
             GObject.idle_add(lambda: self.emit("load-failed", e))
@@ -323,6 +328,11 @@ class Journal(GObject.GObject):
             return pool.find(label)
 
     def accounts_and_last_commodities(self):
+        assert self._accounts_and_last_commodities, "no accounts and commos"
+        return self._accounts_and_last_commodities
+
+    @debug_time
+    def _harvest_accounts_and_last_commodities(self):
         # Commodities returned by this method do not contain any annotations.
         accts = []
         commos = dict()
@@ -333,7 +343,7 @@ class Journal(GObject.GObject):
                 comm = post.amount / post.amount
                 comm.commodity = comm.commodity.strip_annotations()
                 commos[str(post.account)] = comm
-        return accts, commos
+        self._accounts_and_last_commodities = (accts, commos)
 
     def all_payees(self):
         """Returns a list of strings with payees (transaction titles)."""

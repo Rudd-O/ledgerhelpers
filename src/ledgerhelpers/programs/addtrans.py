@@ -13,6 +13,9 @@ import ledgerhelpers as common
 import ledgerhelpers.editabletransactionview as ed
 
 
+ASYNC_LOAD_MESSAGE = "Loading completion data from your ledger..."
+
+
 class AddTransWindow(Gtk.Window, common.EscapeHandlingMixin):
 
     def __init__(self):
@@ -89,6 +92,7 @@ class AddTransApp(AddTransWindow, common.EscapeHandlingMixin):
 
         self.add_button.set_sensitive(False)
         self.transholder.title_grab_focus()
+        self.status.set_text(ASYNC_LOAD_MESSAGE)
         self.journal.reread_files_async()
         self.connect("delete-event", lambda _, _a: self.save_preferences())
 
@@ -107,6 +111,8 @@ class AddTransApp(AddTransWindow, common.EscapeHandlingMixin):
             self.get_commodity_for_account
         )
         self.successfully_loaded_accounts_and_commodities = True
+        if self.status.get_text() == ASYNC_LOAD_MESSAGE:
+            self.status.set_text("")
 
     def journal_load_failed(self, journal, e):
         common.FatalError(
