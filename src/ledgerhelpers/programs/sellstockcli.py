@@ -205,7 +205,7 @@ def main():
 
     lines = journal.generate_record(
         "Sale of %s" % (target_amount),
-        datetime.date.today(), None,
+        datetime.date.today(), None, "",
         lines,
     )
     print "========== Record =========="

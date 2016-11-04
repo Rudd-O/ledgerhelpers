@@ -50,7 +50,7 @@ amount2 = common.prompt_for_amount(
     "Current balance?", asset2_currency
 )
 
-lines = journal.generate_record("Adjustment", when, when, [
+lines = journal.generate_record("Adjustment", when, when, "*", [
     (asset1, [-1*amount1, amount2]),
     (asset2, []),
 ])

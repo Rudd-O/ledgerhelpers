@@ -140,14 +140,14 @@ class AddTransApp(AddTransWindow, common.EscapeHandlingMixin):
 
     def autofill_transaction_view(self, transaction_view, transaction):
         transaction_view.replace_postings(transaction.postings)
-        transaction_view.set_clearing(bool(transaction.state))
+        transaction_view.set_clearing(transaction.state)
 
     def update_transaction_view(self, ignored=None):
         self.update_validation()
         k = self.transholder.get_data_for_transaction_record
-        title, date, clear, lines = k()
+        title, date, clear, statechar, lines = k()
         self.transaction_view.generate_record(
-             title, date, clear, lines
+             title, date, clear, statechar, lines
          )
 
     def update_validation(self, grab_focus=False):
@@ -181,7 +181,7 @@ class AddTransApp(AddTransWindow, common.EscapeHandlingMixin):
         if not self.successfully_loaded_accounts_and_commodities:
             return
         self.preferences["default_to_clearing"] = (
-            self.transholder.clearing.get_active()
+            self.transholder.clearing.get_state() != self.transholder.clearing.STATE_UNCLEARED
         )
         if self.transholder.when.get_date() in (datetime.date.today(), None):
             del self.preferences["last_date"]

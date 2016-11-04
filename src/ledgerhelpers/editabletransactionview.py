@@ -1,6 +1,5 @@
 #!/usr/bin/env python
-
-import datetime
+# coding: utf-8
 
 from gi.repository import GObject
 import gi; gi.require_version("Gdk", "3.0")
@@ -10,6 +9,7 @@ from gi.repository import Gtk
 
 import ledgerhelpers as h
 from ledgerhelpers.dateentry import DateEntry
+from ledgerhelpers.transactionstatebutton import TransactionStateButton
 
 
 class EditableTransactionView(Gtk.Grid):
@@ -37,24 +37,19 @@ class EditableTransactionView(Gtk.Grid):
         container.attach(self.when, 0, 0, 1, 1)
         self.when.connect("changed", self.child_changed)
 
-        self.clearing = Gtk.CheckButton()
-        container.attach(self.clearing, 1, 0, 1, 1)
         self.clearing_when = DateEntry()
         self.clearing_when.set_activates_default(True)
         self.clearing_when.set_hexpand(False)
+        self.clearing_when.follow(self.when)
+        container.attach(self.clearing_when, 1, 0, 1, 1)
         self.clearing_when.connect("changed", self.child_changed)
 
-        def process_toggle(*args):
-            self.clearing_when.set_sensitive(self.clearing.get_active())
-
-        self.clearing.connect("toggled", process_toggle)
-        self.clearing.connect("toggled", self.child_changed)
-        self.clearing_when.set_sensitive(self.clearing.get_active())
-        self.clearing_when.follow(self.when)
-        container.attach(self.clearing_when, 2, 0, 1, 1)
+        self.clearing = TransactionStateButton()
+        container.attach(self.clearing, 2, 0, 1, 1)
+        self.clearing.connect("clicked", self.child_changed)
 
         container.set_focus_chain(
-            [self.when, self.clearing, self.clearing_when]
+            [self.when, self.clearing_when, self.clearing]
         )
 
         self.attach(container, 0, 0, 1, 1)
@@ -186,8 +181,8 @@ class EditableTransactionView(Gtk.Grid):
         self.payee.set_text("")
         self._postings_modified = False
 
-    def set_clearing(self, clearedornot):
-        self.clearing.set_active(clearedornot)
+    def set_clearing(self, clearingstate):
+        self.clearing.set_state(clearingstate)
 
     def replace_postings(self, transactionpostings):
         """Replace postings with a list of TransactionPosting."""
@@ -248,11 +243,8 @@ class EditableTransactionView(Gtk.Grid):
     def get_data_for_transaction_record(self):
         title = self.payee.get_text().strip()
         date = self.when.get_date()
-        clearing = (
-            self.clearing_when.get_date()
-            if self.clearing.get_active()
-            else None
-        )
+        clearing_state = self.clearing.get_state_char()
+        clearing_when = self.clearing_when.get_date()
 
         def get_entries():
             entries = []
@@ -264,11 +256,13 @@ class EditableTransactionView(Gtk.Grid):
             return entries
 
         accountamounts = [(x, y) for x, y in get_entries()]
-        return title, date, clearing, accountamounts
+        return title, date, clearing_when, clearing_state, accountamounts
 
     def validate(self, grab_focus=False):
         """Raises ValidationError if the transaction is not valid."""
-        title, date, clear, lines = self.get_data_for_transaction_record()
+        title, date, auxdate, statechar, lines = (
+            self.get_data_for_transaction_record()
+        )
         if not title:
             if grab_focus:
                 self.payee.grab_focus()
@@ -282,6 +276,7 @@ class EditableTransactionView(Gtk.Grid):
                 "Enter at least two transaction entries"
             )
         try:
-            h.generate_record(title, date, clear, lines, validate=True)
+            h.generate_record(title, date, auxdate, statechar, lines,
+                              validate=True)
         except h.LedgerParseError as e:
             raise h.TransactionInputValidationError(str(e))

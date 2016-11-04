@@ -10,6 +10,7 @@ import threading
 
 import ledgerhelpers as common
 from ledgerhelpers import dateentry as de
+from ledgerhelpers import transactionstatebutton as tb
 
 
 class BuyWindow(Gtk.Window):
@@ -58,13 +59,16 @@ class BuyWindow(Gtk.Window):
 
         row += 1
 
-        self.clearing = Gtk.CheckButton("Date of clearing")
-        grid.attach(self.clearing, 0, row, 1, 1)
+        grid.attach(Gtk.Label("Clearing state"), 0, row, 1, 1)
+
+        self.clearing = tb.TransactionStateButton()
+        grid.attach(self.clearing, 1, row, 1, 1)
+
+        row += 1
+
+        grid.attach(Gtk.Label("Date of clearing"), 0, row, 1, 1)
+
         self.clearing_when = de.DateEntry()
-        def process_toggle(*args):
-            self.clearing_when.set_sensitive(self.clearing.get_active())
-        self.clearing.connect("toggled", process_toggle)
-        self.clearing_when.set_sensitive(self.clearing.get_active())
         grid.attach(self.clearing_when, 1, row, 1, 1)
         self.clearing_when.set_activates_default(True)
 
@@ -140,8 +144,10 @@ class BuyApp(BuyWindow, common.EscapeHandlingMixin):
                 self.suggest_expense_account(self.what)
                 self.amount.grab_focus()
 
-            self.clearing.set_active(
-                self.preferences.get("default_to_clearing", True)
+            self.clearing.set_state(
+                self.clearing.STATE_CLEARED
+                if self.preferences.get("default_to_clearing", True)
+                else self.clearing.STATE_UNCLEARED
             )
             date = self.preferences.get("last_date", datetime.date.today())
             self.when.set_date(date)
@@ -151,7 +157,7 @@ class BuyApp(BuyWindow, common.EscapeHandlingMixin):
 
             self.what.connect("changed", self.update_transaction_view)
             self.when.connect("changed", self.update_transaction_view)
-            self.clearing.connect("toggled", self.update_transaction_view)
+            self.clearing.connect("clicked", self.update_transaction_view)
             self.clearing_when.connect("changed", self.update_transaction_view)
             self.amount.connect("changed", self.update_transaction_view)
             self.asset.connect("changed", self.update_transaction_view)
@@ -184,7 +190,8 @@ class BuyApp(BuyWindow, common.EscapeHandlingMixin):
         self.transaction_view.generate_record(
             self.what.get_text(),
             self.when.get_date(),
-            self.clearing_when.get_date() if self.clearing.get_active() else None,
+            self.clearing_when.get_date(),
+            self.clearing.get_state_char(),
             [
                 (self.asset.get_text(), negamount),
                 (self.expense.get_text(), amount),
@@ -249,7 +256,10 @@ class BuyApp(BuyWindow, common.EscapeHandlingMixin):
     def save_preferences(self):
         if not self.successfully_loaded_accounts_and_commodities:
             return
-        self.preferences["default_to_clearing"] = self.clearing.get_active()
+        self.preferences["default_to_clearing"] = (
+            True if self.clearing.get_state() == self.clearing.STATE_CLEARED
+            else False
+        )
         if self.when.get_date() in (datetime.date.today(), None):
             del self.preferences["last_date"]
         else:

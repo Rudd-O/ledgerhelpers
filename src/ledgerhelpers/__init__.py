@@ -126,12 +126,14 @@ def format_date(date_obj, sample_date):
     return date_obj.strftime(fmt)
 
 
-def generate_record(title, date, cleared_date, accountamounts, validate=False):
+def generate_record(title, date, auxdate, state, accountamounts,
+                    validate=False):
     """Generates a transaction record.
 
     date is a datetime.date
     title is a string describing the title of the transaction
-    cleared_date is the date when the transaction cleared, or None
+    auxdate is the date when the transaction cleared, or None
+    statechar is a char from parser.CHAR_* or empty string
     accountamounts is a list of:
     (account, amount)
     """
@@ -141,15 +143,20 @@ def generate_record(title, date, cleared_date, accountamounts, validate=False):
             return ""
         return str(amt).strip()
 
+    if state:
+        state = state + " "
+    else:
+        state = ""
+
     lines = [""]
     linesemptyamts = []
-    if cleared_date:
-        if cleared_date != date:
-            lines.append("%s=%s * %s" % (date, cleared_date, title))
+    if auxdate:
+        if auxdate != date:
+            lines.append("%s=%s %s%s" % (date, auxdate, state, title))
         else:
-            lines.append("%s * %s" % (date, title))
+            lines.append("%s %s%s" % (date, state, title))
     else:
-        lines.append("%s %s" % (date, title))
+        lines.append("%s %s%s" % (date, state, title))
 
     try:
         longest_acct = max(list(len(a) for a, _ in accountamounts))
@@ -847,10 +854,8 @@ class LedgerTransactionView(EditableTabFocusFriendlyTextView):
             Pango.font_description_from_string('monospace')
         )
 
-    def generate_record(self, what, when, cleared, accountamounts):
-        lines = generate_record(
-            what, when, cleared, accountamounts,
-        )
+    def generate_record(self, *args):
+        lines = generate_record(*args)
         self.get_buffer().set_text("\n".join(lines))
 
 

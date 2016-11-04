@@ -51,7 +51,7 @@ def main():
         "What was deposited?", asset2_currency
     )
 
-    lines = journal.generate_record("Withdrawal", when, None, [
+    lines = journal.generate_record("Withdrawal", when, None, "", [
         (asset1, -1 * amount1),
         (asset2, amount2),
     ])

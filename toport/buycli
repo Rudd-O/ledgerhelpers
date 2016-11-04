@@ -60,7 +60,7 @@ assert asset, "Not an account: %s" % asset
 s["last_asset_account"] = asset
 expense_currency = commodities.get(asset, expense_currency)
 
-lines = journal.generate_record(what, when, None, [
+lines = journal.generate_record(what, when, None, "", [
     (asset, [-1*amount]),
     (expense, [amount]),
 ])
