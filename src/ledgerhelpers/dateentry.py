@@ -137,7 +137,7 @@ class _DateEntryPopup(Gtk.Window):
         self.calendar.connect('day-selected-double-click',
                               self._on_calendar__day_selected_double_click)
         self.calendar.connect('day-selected',
-                              self._on_calendar__day_selected_double_click)
+                              self._on_calendar__day_selected)
         vbox.pack_start(self.calendar, False, False, 0)
         self.calendar.show()
 
@@ -161,6 +161,10 @@ class _DateEntryPopup(Gtk.Window):
         self.height = self._vbox.size_request().height
 
     def _on_calendar__day_selected_double_click(self, calendar):
+        self.emit('date-selected', self.get_date())
+        self.popdown()
+
+    def _on_calendar__day_selected(self, calendar):
         self.emit('date-selected', self.get_date())
 
     def _on__button_press_event(self, window, event):
@@ -229,9 +233,7 @@ class _DateEntryPopup(Gtk.Window):
                 return True
             else:
                 self.get_window().get_display().pointer_ungrab(activate_time)
-                print "ungrabbing"
                 return False
-        print "fuck"
         return False
 
     def _get_position(self):
@@ -348,9 +350,9 @@ class DateEntry(Gtk.HBox):
     These are the date formats expected by Ledger.
 
     In addition to the text box where you can type, I also contain a button
-    with an arrow you can click, to get a popup window with a date picker
-    where you can select the date.  When the text box has focus, Alt+Down
-    will display the date picker popup.
+    with an icon you can click, to get a popup window with a date picker
+    where you can select the date.  You can also show the date picker
+    by focusing me and then hitting Alt+Down on your keyboard.
 
     There are a number of cool combos you can use, whether in the text box
     or in the date picker popup:
@@ -384,38 +386,40 @@ class DateEntry(Gtk.HBox):
     def __init__(self):
         Gtk.HBox.__init__(self)
 
-        self._popping_down = False
         self._old_date = None
 
         self.entry = Gtk.Entry()
         self.entry.set_max_length(10)
-        self.entry.set_width_chars(10)
+        self.entry.set_width_chars(12)
         self.entry.set_overwrite_mode(True)
         self.entry.set_tooltip_text(
             self.__doc__.replace("\n    ", "\n").strip()
         )
+        self.entry.set_property('primary-icon-name', "x-office-calendar")
         self.entry.connect('changed', self._on_entry__changed)
         self.entry.connect('activate', self._on_entry__activate)
         self.entry.connect('key-press-event', self._on_entry__key_press_event)
+        self.entry.connect('icon-press', self._on_entry__icon_press)
+#       ADD SUPPORT
+#       self._button.connect('scroll-event', self._on_entry__scroll_event)
         self.entry.set_placeholder_text("Date")
         self.pack_start(self.entry, False, False, 0)
         self.entry.show()
-
-        self._button = Gtk.ToggleButton()
-        self._button.connect('scroll-event', self._on_entry__scroll_event)
-        self._button.connect('toggled', self._on_button__toggled)
-        self._button.set_focus_on_click(False)
-        self.pack_start(self._button, False, False, 0)
-        self._button.show()
-
-        arrow = Gtk.Arrow(Gtk.ArrowType.DOWN, Gtk.ShadowType.NONE)
-        self._button.add(arrow)
-        arrow.show()
 
         self._popup = _DateEntryPopup(self)
         self._popup.connect('date-selected', self._on_popup__date_selected)
         self._popup.connect('hide', self._on_popup__hide)
         self._popup.set_size_request(-1, 24)
+
+    def _on_entry__icon_press(self, unused_entry,
+                              entry_icon_position,
+                              event_button):
+        if (
+            entry_icon_position == Gtk.EntryIconPosition.PRIMARY and
+            event_button.get_button() == (True, 1)
+        ):
+            self._popup_date_picker()
+            return True
 
     def _on_entry__key_press_event(self, unused_window, event):
         keyval = event.keyval
@@ -424,7 +428,7 @@ class DateEntry(Gtk.HBox):
             (keyval == Gdk.KEY_Down or keyval == Gdk.KEY_KP_Down) and
             state == Gdk.ModifierType.MOD1_MASK
         ):
-            self._button.activate()
+            self._popup_date_picker()
             return True
 
         skip_minus = ""
@@ -475,21 +479,15 @@ class DateEntry(Gtk.HBox):
             newdate = date + datetime.timedelta(days=days)
         self.set_date(newdate)
 
-    def _on_button__toggled(self, button):
-        if self._popping_down:
-            return
-
+    def _popup_date_picker(self):
         try:
             date = self.get_date()
         except ValueError:
             date = None
-
         self._popup.popup(date)
 
     def _on_popup__hide(self, popup):
-        self._popping_down = True
-        self._button.set_active(False)
-        self._popping_down = False
+        pass
 
     def _on_popup__date_selected(self, popup, date):
         self.set_date(date)
