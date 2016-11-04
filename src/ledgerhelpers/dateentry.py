@@ -21,9 +21,6 @@ from gi.repository import Gtk
 from ledgerhelpers import format_date, parse_date
 
 
-ValueUnset = "WARFQnesartdhaersthaurwstbk345gpfsar8da"
-
-
 def prev_month(date):
     if date.month == 1:
         return datetime.date(date.year - 1, 12, date.day)
@@ -294,7 +291,7 @@ class _DateEntryPopup(Gtk.Window):
         self.set_size_request(width, height)
         self.move(x, y)
 
-        if (date is not None and date is not ValueUnset):
+        if date is not None:
             self.set_date(date)
         self.grab_focus()
 
@@ -535,8 +532,6 @@ class DateEntry(Gtk.HBox):
             date = self.entry.get_text()
             date = parse_date(date)
         except ValueError:
-            date = None
-        if date == ValueUnset:
             date = None
         return date
 
