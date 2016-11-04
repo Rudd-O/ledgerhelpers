@@ -20,8 +20,32 @@ class EditableTransactionView(Gtk.Grid):
         'payee-changed': (GObject.SIGNAL_RUN_LAST, None, ()),
     }
 
+    css = """
+.editabletransactionview {
+  border: 1px @borders inset;
+  background: #fff;
+}
+
+.editabletransactionview grid {
+  border: none;
+}
+
+.editabletransactionview entry {
+  background: transparent;
+  border: none;
+}
+
+.editabletransactionview button {
+  background: transparent;
+  border: 1px solid transparent;
+}
+"""
+
     def __init__(self):
+        h.add_css(self.css)
         Gtk.Grid.__init__(self)
+        self.get_style_context().add_class("editabletransactionview")
+        self.set_column_spacing(0)
 
         self._postings_modified = False
 
@@ -29,7 +53,7 @@ class EditableTransactionView(Gtk.Grid):
 
         container = Gtk.Grid()
         container.set_hexpand(False)
-        container.set_column_spacing(8)
+        container.set_column_spacing(0)
 
         self.when = DateEntry()
         self.when.set_activates_default(True)
@@ -48,27 +72,29 @@ class EditableTransactionView(Gtk.Grid):
         container.attach(self.clearing, 2, 0, 1, 1)
         self.clearing.connect("clicked", self.child_changed)
 
-        container.set_focus_chain(
-            [self.when, self.clearing_when, self.clearing]
-        )
-
-        self.attach(container, 0, 0, 1, 1)
-
         self.payee = h.EagerCompletingEntry()
         self.payee.set_hexpand(True)
         self.payee.set_activates_default(True)
         self.payee.set_size_request(300, -1)
-        self.payee.set_placeholder_text("Payee or description")
-        self.attach(self.payee, 1, 0, 1, 1)
+        self.payee.set_placeholder_text(
+            "Payee or description (type for completion)"
+        )
+        container.attach(self.payee, 3, 0, 1, 1)
         self.payee.connect("changed", self.payee_changed)
         self.payee.connect("changed", self.child_changed)
         self.payee.connect("focus-out-event", self.payee_focused_out)
 
+        container.set_focus_chain(
+            [self.when, self.clearing_when, self.clearing, self.payee]
+        )
+
+        self.attach(container, 0, row, 1, 1)
+
         row += 1
 
         self.lines_grid = Gtk.Grid()
-        self.lines_grid.set_column_spacing(4)
-        self.attach(self.lines_grid, 0, row, 2, 1)
+        self.lines_grid.set_column_spacing(0)
+        self.attach(self.lines_grid, 0, row, 1, 1)
 
         self.lines = []
         self.accounts_for_completion = Gtk.ListStore(GObject.TYPE_STRING)
@@ -200,12 +226,12 @@ class EditableTransactionView(Gtk.Grid):
         account.set_activates_default(True)
         account.get_completion().set_model(self.accounts_for_completion)
         account.set_placeholder_text(
-            "Account (a few characters trigger completion)"
+            "Account (type for completion)"
         )
         hid3 = account.connect("changed", self.child_changed)
         account._handler_ids = [hid3]
 
-        amount = h.LedgerAmountWithPriceEntry()
+        amount = h.LedgerAmountWithPriceEntry(display=False)
         amount.set_activates_default(True)
         amount.set_placeholder_text("Amount")
         hid3 = amount.connect("changed", self.child_changed)
@@ -213,10 +239,14 @@ class EditableTransactionView(Gtk.Grid):
 
         row = len(self.lines)
 
-        amount.remove(amount.display)
-        self.lines_grid.attach(amount.display, 0, row, 1, 1)
-        amount.remove(amount.entry)
-        self.lines_grid.attach(amount.entry, 1, row, 1, 1)
+        if amount.display:
+            amount.remove(amount.display)
+            self.lines_grid.attach(amount.display, 0, row, 1, 1)
+            amount.remove(amount.entry)
+            self.lines_grid.attach(amount.entry, 1, row, 1, 1)
+        else:
+            amount.remove(amount.entry)
+            self.lines_grid.attach(amount.entry, 0, row, 1, 1)
         self.lines_grid.attach(account, 2, row, 1, 1)
 
         account.show()

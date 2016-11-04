@@ -34,17 +34,17 @@ class TransactionStateButton(Gtk.Button):
     def _reflect_state(self):
         addtext = "\n\nToggle this to change the transaction state."
         if self.state == self.STATE_UNCLEARED:
-            self.label.set_markup("<span size='large'> </span>")
+            self.label.set_markup("∅")
             self.set_tooltip_text(
                 "This transaction is uncleared." + addtext
             )
         elif self.state == self.STATE_CLEARED:
-            self.label.set_markup("<span size='large'>✻</span>")
+            self.label.set_markup("✻")
             self.set_tooltip_text(
                 "This transaction is cleared." + addtext
             )
         else:
-            self.label.set_markup("<span size='large'>!</span>")
+            self.label.set_markup("!")
             self.set_tooltip_text(
                 "This transaction is pending." + addtext
             )

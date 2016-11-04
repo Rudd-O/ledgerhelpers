@@ -19,6 +19,8 @@ import tty
 
 from gi.repository import GObject
 import gi
+gi.require_version("Gdk", "3.0")
+from gi.repository import Gdk
 gi.require_version("Gtk", "3.0")
 from gi.repository import Gtk
 from gi.repository import Pango
@@ -211,6 +213,22 @@ def generate_price_records(records):
         ))
     lines.append("")
     return lines
+
+
+_css_adjusted = {}
+
+
+def add_css(css):
+    global _css_adjusted
+    if css not in _css_adjusted:
+        style_provider = Gtk.CssProvider()
+        style_provider.load_from_data(css)
+        Gtk.StyleContext.add_provider_for_screen(
+            Gdk.Screen.get_default(),
+            style_provider,
+            Gtk.STYLE_PROVIDER_PRIORITY_APPLICATION
+        )
+    _css_adjusted[css] = True
 
 
 class Journal(GObject.GObject):
@@ -691,7 +709,8 @@ class LedgerAmountEntry(Gtk.Grid):
     def show(self):
         Gtk.Grid.show(self)
         self.entry.show()
-        self.display.show()
+        if self.display:
+            self.display.show()
 
     def do_changed(self):
         pass
@@ -699,17 +718,21 @@ class LedgerAmountEntry(Gtk.Grid):
     def set_placeholder_text(self, text):
         self.entry.set_placeholder_text(text)
 
-    def __init__(self, *args):
+    def __init__(self, display=True):
         Gtk.Grid.__init__(self)
         self.amount = None
         self.entry = Gtk.Entry()
         self.entry.set_width_chars(8)
-        self.display = Gtk.Label()
+        if display:
+            self.display = Gtk.Label()
+        else:
+            self.display = None
         self.entry.set_alignment(1.0)
         self.attach(self.entry, 0, 0, 1, 1)
-        self.attach(self.display, 1, 0, 1, 1)
-        self.display.set_halign(Gtk.Align.END)
-        self.display.set_justify(Gtk.Justification.RIGHT)
+        if self.display:
+            self.attach(self.display, 1, 0, 1, 1)
+            self.display.set_halign(Gtk.Align.END)
+            self.display.set_justify(Gtk.Justification.RIGHT)
         self.set_column_spacing(4)
         self.donotreact = False
         self.entry.connect("changed", self.entry_changed)
@@ -733,7 +756,8 @@ class LedgerAmountEntry(Gtk.Grid):
 
     def set_amount(self, amount, skip_entry_update=False):
         self.amount = amount
-        self.display.set_text(str(amount) if amount is not None else "")
+        if self.display:
+            self.display.set_text(str(amount) if amount is not None else "")
         self.donotreact = True
         if not skip_entry_update:
             self.entry.set_text(str(amount) if amount is not None else "")
@@ -743,7 +767,13 @@ class LedgerAmountEntry(Gtk.Grid):
     def set_text(self, text):
         self.entry.set_text(text)
 
+    def _adjust_entry_size(self, w):
+        text = w.get_text()
+        w.set_width_chars(max([8, len(text)]))
+
     def entry_changed(self, w, *args):
+        self._adjust_entry_size(w)
+
         if self.donotreact:
             return
 
@@ -768,9 +798,9 @@ class LedgerAmountEntry(Gtk.Grid):
 
 class LedgerAmountWithPriceEntry(LedgerAmountEntry):
 
-    def __init__(self, *args):
+    def __init__(self, display=True):
         self.price = None
-        LedgerAmountEntry.__init__(self, *args)
+        LedgerAmountEntry.__init__(self, display=display)
 
     def get_amount_and_price(self):
         return self.amount, self.price
@@ -794,7 +824,8 @@ class LedgerAmountWithPriceEntry(LedgerAmountEntry):
         ]
         p = [x for x in p if x]
         concat = " ".join(p)
-        self.display.set_text(concat)
+        if self.display:
+            self.display.set_text(concat)
         self.donotreact = True
         if not skip_entry_update:
             self.entry.set_text(concat)
@@ -802,6 +833,8 @@ class LedgerAmountWithPriceEntry(LedgerAmountEntry):
         self.emit("changed")
 
     def entry_changed(self, w, *args):
+        self._adjust_entry_size(w)
+
         if self.donotreact:
             return
 
@@ -846,17 +879,36 @@ class EditableTabFocusFriendlyTextView(Gtk.TextView):
         return False
 
 
-class LedgerTransactionView(EditableTabFocusFriendlyTextView):
+class LedgerTransactionView(Gtk.Box):
+
+    css = """
+.ledgertransactionview {
+  border: 1px @borders inset;
+}
+"""
 
     def __init__(self, *args):
-        EditableTabFocusFriendlyTextView.__init__(self, *args)
-        self.override_font(
+        Gtk.Box.__init__(self)
+        self.textview = EditableTabFocusFriendlyTextView(*args)
+        add_css(self.css)
+        self.get_style_context().add_class("ledgertransactionview")
+        self.textview.override_font(
             Pango.font_description_from_string('monospace')
         )
+        self.textview.set_border_width(12)
+        self.textview.set_hexpand(True)
+        self.textview.set_vexpand(True)
+        self.add(self.textview)
+        self.textview.get_buffer().set_text(
+            "# A live preview will appear here as you input data."
+        )
+
+    def get_buffer(self):
+        return self.textview.get_buffer()
 
     def generate_record(self, *args):
         lines = generate_record(*args)
-        self.get_buffer().set_text("\n".join(lines))
+        self.textview.get_buffer().set_text("\n".join(lines))
 
 
 class EscapeHandlingMixin(object):

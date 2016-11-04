@@ -3,6 +3,8 @@
 import datetime
 
 from gi.repository import GObject
+import gi; gi.require_version("Gdk", "3.0")
+from gi.repository import Gdk
 import gi; gi.require_version("Gtk", "3.0")
 from gi.repository import Gtk
 from gi.repository import Pango
@@ -19,14 +21,12 @@ class AddTransWindow(Gtk.Window, common.EscapeHandlingMixin):
 
         grid = Gtk.Grid()
         grid.set_column_spacing(8)
-        grid.set_row_spacing(8)
+        grid.set_row_spacing(12)
         self.add(grid)
 
         row = 0
 
         self.transholder = ed.EditableTransactionView()
-        self.transholder.set_column_spacing(8)
-        self.transholder.set_row_spacing(8)
         grid.attach(self.transholder, 0, row, 2, 1)
 
         row += 1
@@ -41,14 +41,12 @@ class AddTransWindow(Gtk.Window, common.EscapeHandlingMixin):
         self.status.set_line_wrap(True)
         self.status.set_line_wrap_mode(Pango.WrapMode.WORD_CHAR)
         self.status.set_hexpand(True)
-        grid.attach(self.status, 0, row, 2, 1)
-
-        row += 1
+        grid.attach(self.status, 0, row, 1, 1)
 
         button_box = Gtk.ButtonBox()
         button_box.set_layout(Gtk.ButtonBoxStyle.END)
         button_box.set_spacing(12)
-        button_box.set_hexpand(True)
+        button_box.set_hexpand(False)
         self.close_button = Gtk.Button(stock=Gtk.STOCK_CLOSE)
         button_box.add(self.close_button)
         self.add_button = Gtk.Button(stock=Gtk.STOCK_ADD)
@@ -181,7 +179,8 @@ class AddTransApp(AddTransWindow, common.EscapeHandlingMixin):
         if not self.successfully_loaded_accounts_and_commodities:
             return
         self.preferences["default_to_clearing"] = (
-            self.transholder.clearing.get_state() != self.transholder.clearing.STATE_UNCLEARED
+            self.transholder.clearing.get_state() !=
+            self.transholder.clearing.STATE_UNCLEARED
         )
         if self.transholder.when.get_date() in (datetime.date.today(), None):
             del self.preferences["last_date"]
