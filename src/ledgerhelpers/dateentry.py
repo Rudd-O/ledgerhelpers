@@ -84,7 +84,8 @@ def according_to_keyval(keyval, date, skip=""):
             return True, prev_day(date)
         else:
             return True, None
-    if (keyval in (Gdk.KEY_plus, Gdk.KEY_KP_Add)):
+    if (keyval in (Gdk.KEY_plus, Gdk.KEY_KP_Add,
+                   Gdk.KEY_equal, Gdk.KEY_KP_Equal)):
         if date:
             return True, next_day(date)
         else:
@@ -387,7 +388,7 @@ class DateEntry(Gtk.HBox):
 
         self.entry = Gtk.Entry()
         self.entry.set_max_length(10)
-        self.entry.set_width_chars(12)
+        self.entry.set_width_chars(13)
         self.entry.set_overwrite_mode(True)
         self.entry.set_tooltip_text(
             self.__doc__.replace("\n    ", "\n").strip()
