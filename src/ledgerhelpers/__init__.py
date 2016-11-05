@@ -25,7 +25,7 @@ gi.require_version("Gtk", "3.0")
 from gi.repository import Gtk
 from gi.repository import Pango
 
-__version__ = "0.1.0"
+__version__ = "0.1.1"
 
 
 CURSOR_UP = "\033[F"
