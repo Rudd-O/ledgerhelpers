@@ -77,7 +77,7 @@ def _according_to_keyval(keyval, state, date, skip="", in_editbox=False):
         else:
             return True, None
     if (
-        keyval in (Gdk.KEY_minus, Gdk.KEY_KP_Subtract) and
+        keyval in (Gdk.KEY_minus, Gdk.KEY_KP_Subtract, Gdk.KEY_underscore) and
         "minus" not in skip
     ):
         if date:

@@ -88,18 +88,55 @@ class EditableTransactionView(Gtk.Grid):
             [self.when, self.clearing_when, self.clearing, self.payee]
         )
 
-        self.attach(container, 0, row, 1, 1)
+        container_evbox = Gtk.EventBox()
+        container_evbox.add(container)
+        self.attach(container_evbox, 0, row, 1, 1)
 
         row += 1
 
         self.lines_grid = Gtk.Grid()
         self.lines_grid.set_column_spacing(0)
-        self.attach(self.lines_grid, 0, row, 1, 1)
+
+        lines_evbox = Gtk.EventBox()
+        lines_evbox.add(self.lines_grid)
+        self.attach(lines_evbox, 0, row, 1, 1)
 
         self.lines = []
         self.accounts_for_completion = Gtk.ListStore(GObject.TYPE_STRING)
         self.payees_for_completion = Gtk.ListStore(GObject.TYPE_STRING)
         self.add_line()
+
+        for x in container_evbox, lines_evbox:
+            x.connect("key-press-event", self.handle_keypresses)
+            x.add_events(Gdk.EventMask.KEY_PRESS_MASK)
+
+    def handle_keypresses(self, obj, ev):
+        if (
+            ev.state & Gdk.ModifierType.CONTROL_MASK and
+            (ev.keyval in (
+                Gdk.KEY_plus, Gdk.KEY_KP_Add,
+                Gdk.KEY_equal, Gdk.KEY_KP_Equal,
+                Gdk.KEY_minus, Gdk.KEY_KP_Subtract, Gdk.KEY_underscore,
+                Gdk.KEY_Page_Up, Gdk.KEY_KP_Page_Up,
+                Gdk.KEY_Page_Down, Gdk.KEY_KP_Page_Down,
+            ))
+        ):
+            if ev.state & Gdk.ModifierType.SHIFT_MASK:
+                return self.when._on_entry__key_press_event(obj, ev)
+            else:
+                return self.clearing_when._on_entry__key_press_event(obj, ev)
+
+        if (ev.state & Gdk.ModifierType.MOD1_MASK):
+            print "EVENT", ev.keyval, ev.state
+            keybobjects = {
+                Gdk.KEY_t: self.when,
+                Gdk.KEY_l: self.clearing_when,
+                Gdk.KEY_p: self.payee,
+            }
+            for keyval, obj in keybobjects.items():
+                if ev.keyval == keyval:
+                    obj.grab_focus()
+                    return True
 
     def set_transaction_date(self, date):
         self.when.set_date(date)
