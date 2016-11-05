@@ -122,9 +122,9 @@ class EditableTransactionView(Gtk.Grid):
             ))
         ):
             if ev.state & Gdk.ModifierType.SHIFT_MASK:
-                return self.when._on_entry__key_press_event(obj, ev)
-            else:
                 return self.clearing_when._on_entry__key_press_event(obj, ev)
+            else:
+                return self.when._on_entry__key_press_event(obj, ev)
 
         if (ev.state & Gdk.ModifierType.MOD1_MASK):
             print "EVENT", ev.keyval, ev.state
