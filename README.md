@@ -35,6 +35,11 @@ What can you do with these programs
 * Keep your ledger chronologically sorted with
   [sottrans-cli](https://github.com/Rudd-O/ledgerhelpers/blob/master/bin/sorttrans-cli).
 
+Usage and manuals
+-----------------
+
+* [How to add transactions with `addtrans`](doc/addtrans.md)
+
 How to download and install
 ---------------------------
 
@@ -59,41 +64,3 @@ however this should be reasonably easy to fix by excluding the files in
 on how to mitigate this issue.  In the meantime, the programs in `bin/` can run
 from the source directory, but you still need to install the right dependencies,
 such as GTK+ 3 or later, and the Python GObject introspection library.
-
-Usage instructions for addtrans (add transaction)
--------------------------------------------------
-
-Key combos:
-
-* General:
-  * Alt+C: close window without saving
-  * Enter: save transaction as displayed in the preview
-  * Alt+A: save transaction as displayed in the preview
-* While any of the entry fields is focused:
-  * Alt+T: focus on the main date
-  * Alt+L: focus on the auxiliary date
-  * Alt+P: focus on the payee / description field
-  * Control+Minus: previous day on the main date
-  * Control+Plus: next day on the main date
-  * Control+Page Up: same day previous month on the main date
-  * Control+Plus Down: same day next month on the main date
-  * Shift+Control+Minus: previous day on the auxiliary date
-  * Shift+Control+Plus: next day on the auxiliary date
-  * Shift+Control+Page Up: same day previous month on the auxiliary date
-  * Shift+Control+Plus Down: same day next month on the auxiliary date
-* While any of the date fields is focused:
-  * Minus / Underscore: previous day
-  * Plus / Equals: next day
-  * Page Up: same day previous month
-  * Page Down: same day next month
-  * Home: beginning of month
-  * End: end of month
-  * Alt+Down: drop down a calendar picker
-* While the calendar picker of one of the dates is focused:
-  * Same control keys for date selection
-  * Arrow keys: move around the calendar
-  * Space: select the day framed by the dotted line
-  * Enter: confirm and closes the popup
-  * Alt+Up: hide the calendar picker
-* While the transaction state button is focused:
-  * Space: cycle through the different states

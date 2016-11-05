@@ -1,5 +1,6 @@
 #!/usr/bin/env python2
 
+import glob
 from setuptools import setup
 import os
 import platform
@@ -41,6 +42,7 @@ programs = [
 # 'System Integrity Protection'.
 data_files = [
 	("/usr/share/applications", ["applications/%s.desktop" % p for p in programs]),
+	("/usr/share/doc/ledgerhelpers/doc", glob.glob(os.path.join(os.path.dirname(__file__), "doc", "*"))),
 ] if platform.system() != 'Darwin' else []
 
 setup(

@@ -1,3 +1,4 @@
 include README.md
 include toport/*
+include doc/*
 include applications/*.desktop
