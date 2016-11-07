@@ -892,7 +892,7 @@ class EditableTabFocusFriendlyTextView(Gtk.TextView):
 class LedgerTransactionView(Gtk.Box):
 
     css = """
-.ledgertransactionview {
+ledgertransactionview {
   border: 1px @borders inset;
 }
 """
@@ -900,8 +900,6 @@ class LedgerTransactionView(Gtk.Box):
     def __init__(self, *args):
         Gtk.Box.__init__(self)
         self.textview = EditableTabFocusFriendlyTextView(*args)
-        add_css(self.css)
-        self.get_style_context().add_class("ledgertransactionview")
         self.textview.override_font(
             Pango.font_description_from_string('monospace')
         )
@@ -919,6 +917,10 @@ class LedgerTransactionView(Gtk.Box):
     def generate_record(self, *args):
         lines = generate_record(*args)
         self.textview.get_buffer().set_text("\n".join(lines))
+
+
+LedgerTransactionView.set_css_name("ledgertransactionview")
+add_css(LedgerTransactionView.css)
 
 
 class EscapeHandlingMixin(object):

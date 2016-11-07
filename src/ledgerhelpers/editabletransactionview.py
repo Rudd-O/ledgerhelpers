@@ -21,30 +21,28 @@ class EditableTransactionView(Gtk.Grid):
     }
 
     css = """
-.editabletransactionview {
+editabletransactionview {
   border: 1px @borders inset;
   background: #fff;
 }
 
-.editabletransactionview grid {
+editabletransactionview grid {
   border: none;
 }
 
-.editabletransactionview entry {
+editabletransactionview entry {
   background: transparent;
   border: none;
 }
 
-.editabletransactionview button {
+editabletransactionview button {
   background: transparent;
   border: 1px solid transparent;
 }
 """
 
     def __init__(self):
-        h.add_css(self.css)
         Gtk.Grid.__init__(self)
-        self.get_style_context().add_class("editabletransactionview")
         self.set_column_spacing(0)
 
         self._postings_modified = False
@@ -347,3 +345,7 @@ class EditableTransactionView(Gtk.Grid):
                               validate=True)
         except h.LedgerParseError as e:
             raise h.TransactionInputValidationError(str(e))
+
+
+EditableTransactionView.set_css_name("editabletransactionview")
+h.add_css(EditableTransactionView.css)
