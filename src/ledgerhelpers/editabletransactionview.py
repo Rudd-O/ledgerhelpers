@@ -125,7 +125,6 @@ editabletransactionview button {
                 return self.when._on_entry__key_press_event(obj, ev)
 
         if (ev.state & Gdk.ModifierType.MOD1_MASK):
-            print "EVENT", ev.keyval, ev.state
             keybobjects = {
                 Gdk.KEY_t: self.when,
                 Gdk.KEY_l: self.clearing_when,
