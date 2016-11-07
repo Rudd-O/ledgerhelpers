@@ -8,6 +8,7 @@ import datetime
 import fcntl
 import fnmatch
 import ledger
+import logging
 import re
 import os
 import struct
@@ -47,10 +48,13 @@ def debug_time(kallable):
             return kallable(*a, **kw)
         start = time.time()
         try:
+            logging.debug("Run %s in thread %s",
+                          kallable,
+                          threading.currentThread())
             return kallable(*a, **kw)
         finally:
             end = time.time() - start
-            print "Ran %s in %.3f seconds" % (kallable, end)
+            logging.debug("Ran %s in %.3f seconds", kallable, end)
     return f
 
 

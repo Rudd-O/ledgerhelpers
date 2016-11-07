@@ -1,6 +1,8 @@
 #!/usr/bin/env python
 
+import argparse
 import datetime
+import logging
 
 from gi.repository import GObject
 import gi; gi.require_version("Gdk", "3.0")
@@ -197,7 +199,21 @@ class AddTransApp(AddTransWindow, common.EscapeHandlingMixin):
         self.preferences.persist()
 
 
+def get_argparser():
+    parser = argparse.ArgumentParser(
+        'Add new transactions to your Ledger file'
+    )
+    parser.add_argument('--debug', dest='debug', action='store_true',
+                        help='activate debugging')
+    return parser
+
+
 def main():
+    args = get_argparser().parse_args()
+    if args.debug:
+        common._debug_time = True
+        logging.basicConfig(level=logging.DEBUG)
+
     journal, s = common.load_journal_and_settings_for_gui(read_journal=False)
     klass = AddTransApp
     win = klass(journal, s)
