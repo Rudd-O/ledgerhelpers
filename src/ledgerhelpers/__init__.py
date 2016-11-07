@@ -301,7 +301,10 @@ class Journal(GObject.GObject):
             # Now collect accounts and last commodities.
             self._harvest_accounts_and_last_commodities()
 
-            GObject.idle_add(lambda: self.emit("loaded"))
+            @debug_time
+            def emit_journal_loaded():
+                return self.emit("loaded")
+            GObject.idle_add(emit_journal_loaded)
         except Exception as e:
             GObject.idle_add(lambda: self.emit("load-failed", e))
             raise
