@@ -214,6 +214,8 @@ def main():
         common._debug_time = True
         logging.basicConfig(level=logging.DEBUG)
 
+    GObject.threads_init()
+
     journal, s = common.load_journal_and_settings_for_gui(read_journal=False)
     klass = AddTransApp
     win = klass(journal, s)

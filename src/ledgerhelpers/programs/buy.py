@@ -291,6 +291,9 @@ def main():
     if args and args[0] == "-n":
         klass = InnocuousBuyApp
         args = args[1:]
+
+    GObject.threads_init()
+
     win = klass(journal, s, " ".join(args) if args else None)
     win.connect("delete-event", Gtk.main_quit)
     GObject.idle_add(win.show_all)

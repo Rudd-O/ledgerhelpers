@@ -811,6 +811,9 @@ class UpdatePricesApp(
 def main(argv):
     p = get_argparser()
     args = p.parse_args(argv[1:])
+
+    GObject.threads_init()
+
     journal, settings = ledgerhelpers.load_journal_and_settings_for_gui(
         price_file_mandatory=True
     )
