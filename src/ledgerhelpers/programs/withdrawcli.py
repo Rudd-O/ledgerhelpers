@@ -5,12 +5,13 @@ import ledger
 import os
 import sys
 import ledgerhelpers as common
+import ledgerhelpers.journal as journal
 
 
 def main():
     s = common.Settings.load_or_defaults(os.path.expanduser("~/.ledgerhelpers.ini"))
-    journal = common.Journal.from_file(common.find_ledger_file(), None)
-    accts, commodities = journal.accounts_and_last_commodities()
+    j = journal.Journal.from_file(common.find_ledger_file(), None)
+    accts, commodities = j.accounts_and_last_commodity_for_account()
 
 
     when = common.prompt_for_date(
@@ -51,7 +52,7 @@ def main():
         "What was deposited?", asset2_currency
     )
 
-    lines = journal.generate_record("Withdrawal", when, None, "", [
+    lines = j.generate_record("Withdrawal", when, None, "", [
         (asset1, -1 * amount1),
         (asset2, amount2),
     ])
@@ -62,4 +63,4 @@ def main():
         "Hit ENTER or y to save it to the file, BACKSPACE or n to skip saving: "
     )
     if save:
-        journal.add_text_to_file(lines)
+        j.add_text_to_file(lines)

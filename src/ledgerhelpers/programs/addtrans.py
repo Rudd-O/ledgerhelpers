@@ -3,6 +3,7 @@
 import argparse
 import datetime
 import logging
+import traceback
 
 from gi.repository import GObject
 import gi; gi.require_version("Gdk", "3.0")
@@ -16,6 +17,26 @@ import ledgerhelpers.editabletransactionview as ed
 
 
 ASYNC_LOAD_MESSAGE = "Loading completion data from your ledger..."
+ASYNC_LOADING_ACCOUNTS_MESSAGE = (
+    "Loading account and commodity data from your ledger..."
+)
+
+
+def transactions_with_payee(payee,
+                            internal_parsing,
+                            case_sensitive=True):
+    transes = []
+    for xact in internal_parsing:
+        if not hasattr(xact, "payee"):
+            continue
+        left = xact.payee
+        right = payee
+        if not case_sensitive:
+            left = left.lower()
+            right = right.lower()
+        if left == right:
+            transes.append(xact)
+    return transes
 
 
 class AddTransWindow(Gtk.Window, common.EscapeHandlingMixin):
@@ -63,6 +84,9 @@ class AddTransWindow(Gtk.Window, common.EscapeHandlingMixin):
 
 class AddTransApp(AddTransWindow, common.EscapeHandlingMixin):
 
+    logger = logging.getLogger("addtrans")
+    internal_parsing = []
+
     def __init__(self, journal, preferences):
         AddTransWindow.__init__(self)
         self.journal = journal
@@ -71,12 +95,11 @@ class AddTransApp(AddTransWindow, common.EscapeHandlingMixin):
 
         self.accounts = []
         self.commodities = dict()
+        self.internal_parsing = []
         self.payees = []
 
         self.activate_escape_handling()
 
-        self.journal.connect("loaded", self.journal_loaded)
-        self.journal.connect("load-failed", self.journal_load_failed)
         self.close_button.connect("clicked",
                                   lambda _: self.emit('delete-event', None))
         self.add_button.connect("clicked",
@@ -95,28 +118,49 @@ class AddTransApp(AddTransWindow, common.EscapeHandlingMixin):
         self.add_button.set_sensitive(False)
         self.transholder.title_grab_focus()
         self.status.set_text(ASYNC_LOAD_MESSAGE)
-        self.journal.reread_files_async()
+
         self.connect("delete-event", lambda _, _a: self.save_preferences())
+        self.reload_completion_data()
 
-    @common.debug_time
-    def journal_loaded(self, journal):
-        accts, commodities = self.journal.accounts_and_last_commodities()
-        payees = self.journal.all_payees()
+    def reload_completion_data(self):
+        common.g_async(
+            lambda: self.journal.internal_parsing(),
+            lambda payees: self.internal_parsing_loaded(payees),
+            self.journal_load_failed,
+        )
 
-        self.accounts = accts
-        self.commodities = commodities
+    def internal_parsing_loaded(self, internal_parsing):
+        self.internal_parsing = internal_parsing
+        common.g_async(
+            lambda: self.journal.all_payees(),
+            lambda payees: self.all_payees_loaded(payees),
+            self.journal_load_failed,
+        )
+
+    def all_payees_loaded(self, payees):
         self.payees = payees
+        self.transholder.set_payees_for_completion(self.payees)
+        common.g_async(
+            lambda: self.journal.accounts_and_last_commodity_for_account(),
+            lambda r: self.accounts_and_last_commodities_loaded(*r),
+            self.journal_load_failed,
+        )
+        if self.status.get_text() == ASYNC_LOAD_MESSAGE:
+            self.status.set_text(ASYNC_LOADING_ACCOUNTS_MESSAGE)
 
-        self.transholder.set_payees_for_completion(payees)
-        self.transholder.set_accounts_for_completion(accts)
+    def accounts_and_last_commodities_loaded(self, accounts, last_commos):
+        self.accounts = accounts
+        self.commodities = last_commos
+        self.transholder.set_accounts_for_completion(self.accounts)
         self.transholder.set_default_commodity_getter(
             self.get_commodity_for_account
         )
         self.successfully_loaded_accounts_and_commodities = True
-        if self.status.get_text() == ASYNC_LOAD_MESSAGE:
+        if self.status.get_text() == ASYNC_LOADING_ACCOUNTS_MESSAGE:
             self.status.set_text("")
 
-    def journal_load_failed(self, journal, e):
+    def journal_load_failed(self, e):
+        traceback.print_exc()
         common.FatalError(
             "Add transaction loading failed",
             "An unexpected error took place:\n%s" % e,
@@ -136,8 +180,9 @@ class AddTransApp(AddTransWindow, common.EscapeHandlingMixin):
         self.try_autofill(emitter, text)
 
     def try_autofill(self, transaction_view, autofill_text):
-        ts = self.journal.transactions_with_payee(
+        ts = transactions_with_payee(
             autofill_text,
+            self.internal_parsing,
             case_sensitive=False
         )
         if not ts:
@@ -172,16 +217,14 @@ class AddTransApp(AddTransWindow, common.EscapeHandlingMixin):
             return
         buf = self.transaction_view.get_buffer()
         text = buf.get_text(buf.get_start_iter(), buf.get_end_iter(), True)
-        self.save_transaction(text)
+        self.journal.add_text_to_file(text)
         self.reset_after_save()
-
-    def save_transaction(self, text):
-        self.journal.add_text_to_file_async(text)
 
     def reset_after_save(self):
         self.transholder.clear()
         self.transholder.title_grab_focus()
         self.status.set_text("Transaction saved")
+        self.reload_completion_data()
 
     def save_preferences(self):
         if not self.successfully_loaded_accounts_and_commodities:
@@ -210,13 +253,11 @@ def get_argparser():
 
 def main():
     args = get_argparser().parse_args()
-    if args.debug:
-        common._debug_time = True
-        logging.basicConfig(level=logging.DEBUG)
+    common.enable_debugging(args.debug)
 
     GObject.threads_init()
 
-    journal, s = common.load_journal_and_settings_for_gui(read_journal=False)
+    journal, s = common.load_journal_and_settings_for_gui()
     klass = AddTransApp
     win = klass(journal, s)
     win.connect("delete-event", Gtk.main_quit)

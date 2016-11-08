@@ -115,7 +115,7 @@ def matches(string, options):
 
 def main():
     journal, s = common.load_journal_and_settings_for_gui()
-    accts, commodities = journal.accounts_and_last_commodities()
+    accts, commodities = journal.accounts_and_last_commodity_for_account()
 
     saleacct = common.prompt_for_account(
         sys.stdin, sys.stdout,
@@ -190,13 +190,13 @@ def main():
             datetext = ''
         lines.append((
             l.account,
-            [tpl % (m.strip_annotations(),
-                    m.commodity.details.price,
-                    datetext,
-                    target_sale_price)]
+            tpl % (m.strip_annotations(),
+                   m.commodity.details.price,
+                   datetext,
+                   target_sale_price)
         ))
         diff = (l.price - target_sale_price) * l.amount
-        lines.append((gainslossesacct, [diff]))
+        lines.append((gainslossesacct, diff))
     totalsale = target_sale_price * sum(
         l.amount.number() for l in lots_produced
     )

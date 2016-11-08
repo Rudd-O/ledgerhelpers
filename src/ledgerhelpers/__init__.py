@@ -9,8 +9,10 @@ import fcntl
 import fnmatch
 import ledger
 import logging
+from multiprocessing import Pipe
 import re
 import os
+import signal
 import struct
 import sys
 import termios
@@ -41,21 +43,34 @@ def debug(string, *args):
 _debug_time = False
 
 
-def debug_time(kallable):
-    def f(*a, **kw):
-        global _debug_time
-        if not _debug_time:
-            return kallable(*a, **kw)
-        start = time.time()
-        try:
-            logging.debug("Run %s in thread %s",
-                          kallable,
-                          threading.currentThread())
-            return kallable(*a, **kw)
-        finally:
-            end = time.time() - start
-            logging.debug("Ran %s in %.3f seconds", kallable, end)
-    return f
+def debug_time(logger):
+    def debug_time_inner(kallable):
+        def f(*a, **kw):
+            global _debug_time
+            if not _debug_time:
+                return kallable(*a, **kw)
+            start = time.time()
+            try:
+                name = kallable.__name__
+            except AttributeError:
+                name = str(kallable)
+            name = name + "@" + threading.currentThread().getName()
+            try:
+                logger.debug("* Timing:    %-55s  started", name)
+                return kallable(*a, **kw)
+            finally:
+                end = time.time() - start
+                logger.debug("* Timed:     %-55s  %.3f seconds", name, end)
+        return f
+    return debug_time_inner
+
+
+def enable_debugging(enable):
+    global _debug_time
+    if enable:
+        _debug_time = True
+        fmt = "%(created)f:%(levelname)8s:%(name)20s: %(message)s"
+        logging.basicConfig(level=logging.DEBUG, format=fmt)
 
 
 def matches(string, options):
@@ -235,190 +250,16 @@ def add_css(css):
     _css_adjusted[css] = True
 
 
-class Journal(GObject.GObject):
-
-    __gsignals__ = {
-        'loaded': (GObject.SIGNAL_RUN_LAST, None, ()),
-        'load-failed': (GObject.SIGNAL_RUN_LAST, None, (object,)),
-    }
-
-    __name__ = "Journal"
-    _accounts_and_last_commodities = None
-
-    def __init__(self):
-        GObject.GObject.__init__(self)
-        """Do not instantiate directly.  Use class methods."""
-        self.path = None
-        self.price_path = None
-        self.session = None
-        self.journal = None
-        self.internal_parsing = []
-
-    @classmethod
-    @debug_time
-    def from_file(klass, journal_file, price_file):
-        j = klass()
-        j.path = journal_file
-        j.price_path = price_file
-        j.reread_files()
-        return j
-
-    @classmethod
-    @debug_time
-    def from_file_unloaded(klass, journal_file, price_file):
-        j = klass()
-        j.path = journal_file
-        j.price_path = price_file
-        return j
-
-    @debug_time
-    def reread_files(self):
+def g_async(func, success_func, failure_func):
+    def f():
         try:
-            files = []
-            if self.price_path:
-                files.append(self.price_path)
-            if self.path:
-                files.append(self.path)
-            text = "\n".join(file(x).read() for x in files)
-
-            if self.path:
-                unitext = "\n".join(
-                    codecs.open(x, "rb", "utf-8").read()
-                    for x in [self.path]
-                )
-            else:
-                unitext = u""
-
-            session = ledger.Session()
-            journal = session.read_journal_from_string(text)
-            from ledgerhelpers import parser
-            internal_parsing = parser.lex_ledger_file_contents(unitext)
-
-            self.session = session
-            self.journal = journal
-            self.internal_parsing = internal_parsing
-
-            # Now collect accounts and last commodities.
-            self._harvest_accounts_and_last_commodities()
-
-            @debug_time
-            def emit_journal_loaded():
-                return self.emit("loaded")
-            GObject.idle_add(emit_journal_loaded)
-        except Exception as e:
-            GObject.idle_add(lambda: self.emit("load-failed", e))
-            raise
-
-    @debug_time
-    def reread_files_async(self):
-        t = threading.Thread(target=self.reread_files)
-        t.start()
-
-    def commodities(self):
-        pool = None
-        for post in self.journal.query(""):
-            for post in post.xact.posts():
-                pool = post.amount.commodity.pool()
-        if pool is None:
-            pool = ledger.Amount("$ 1").commodity.pool()
-        for n in pool.iterkeys():
-            if n in "%hms" or not n:
-                continue
-            c = pool.find(n)
-            yield c
-
-    def commodity(self, label, create=False):
-        pool = ledger.Amount("$ 1").commodity.pool()
-        if create:
-            return pool.find_or_create(label)
-        else:
-            return pool.find(label)
-
-    def accounts_and_last_commodities(self):
-        assert self._accounts_and_last_commodities, "no accounts and commos"
-        return self._accounts_and_last_commodities
-
-    @debug_time
-    def _harvest_accounts_and_last_commodities(self):
-        # Commodities returned by this method do not contain any annotations.
-        accts = []
-        commos = dict()
-        for post in self.journal.query(""):
-            for post in post.xact.posts():
-                if str(post.account) not in accts:
-                    accts.append(str(post.account))
-                comm = post.amount / post.amount
-                comm.commodity = comm.commodity.strip_annotations()
-                commos[str(post.account)] = comm
-        self._accounts_and_last_commodities = (accts, commos)
-
-    def all_payees(self):
-        """Returns a list of strings with payees (transaction titles)."""
-        titles = collections.OrderedDict()
-        for xact in self.internal_parsing:
-            if hasattr(xact, "payee") and xact.payee not in titles:
-                titles[xact.payee] = xact.payee
-        return titles.keys()
-
-    def transactions_with_payee(self, payee, case_sensitive=True):
-        transes = []
-        for xact in self.internal_parsing:
-            if not hasattr(xact, "payee"):
-                continue
-            left = xact.payee
-            right = payee
-            if not case_sensitive:
-                left = left.lower()
-                right = right.lower()
-            if left == right:
-                transes.append(xact)
-        return transes
-
-    def query(self, querystring):
-        return self.journal.query(querystring)
-
-    def raw_xacts_iter(self):
-        for p in self.journal.xacts():
-            yield p
-
-    def balance_in_single_commodity(self, querystring):
-        amount1 = ledger.Balance()
-        for post in self.journal.query(querystring):
-            amount1 += post.amount
-        return amount1.commodity_amount()
-
-    def generate_record(self, *args):
-        return generate_record(*args)
-
-    def generate_price_records(self, prices):
-        return generate_price_records(prices)
-
-    def _add_text_to_file(self, text, reload_journal, in_background, file=None):
-        if file is None:
-            file = self.path
-        if not isinstance(text, basestring):
-            text = "\n".join(text)
-        f = open(file, "a")
-        print >> f, text,
-        f.flush()
-        f.close()
-        if reload_journal:
-            if in_background:
-                self.reread_files_async()
-            else:
-                self.reread_files()
-
-    def add_text_to_file(self, text, reload_journal=True):
-        return self._add_text_to_file(text, reload_journal, False)
-
-    def add_text_to_file_async(self, text, reload_journal=True):
-        return self._add_text_to_file(text, reload_journal, True)
-
-    def add_text_to_price_file(self, text, reload_journal=True):
-        return self._add_text_to_file(text, reload_journal, False, self.price_path)
-
-    def add_text_to_price_file_async(self, text, reload_journal=True):
-        return self._add_text_to_file(text, reload_journal, True, self.price_path)
+            GObject.idle_add(success_func, func())
+        except BaseException as e:
+            GObject.idle_add(failure_func, e)
+    t = threading.Thread(target=f)
+    t.setDaemon(True)
+    t.start()
+    return t
 
 
 class Settings(dict):
@@ -756,11 +597,14 @@ class LedgerAmountEntry(Gtk.Grid):
         self.set_default_commodity(ledger.Amount("$ 1").commodity)
         self.set_activates_default = self.entry.set_activates_default
 
+    def get_default_commodity(self):
+        return self.default_commodity
+
     def set_default_commodity(self, commodity):
         if isinstance(commodity, ledger.Amount):
             commodity = commodity.commodity
         self.default_commodity = commodity
-        self.entry_changed(self.entry)
+        self.emit("changed")
 
     def is_focus(self):
         return self.entry.is_focus()
@@ -847,7 +691,6 @@ class LedgerAmountWithPriceEntry(LedgerAmountEntry):
         if not skip_entry_update:
             self.entry.set_text(concat)
         self.donotreact = False
-        self.emit("changed")
 
     def entry_changed(self, w, *args):
         self._adjust_entry_size(w)
@@ -969,9 +812,8 @@ def FatalError(message, secondary=None, outside_mainloop=False, parent=None):
 cannot_start_dialog = lambda msg: FatalError("Cannot start program", msg, outside_mainloop=True)
 
 
-@debug_time
-def load_journal_and_settings_for_gui(price_file_mandatory=False,
-                                      read_journal=True):
+@debug_time(logging.getLogger("loadstate"))
+def load_journal_and_settings_for_gui(price_file_mandatory=False):
     try:
         ledger_file = find_ledger_file()
     except Exception, e:
@@ -989,10 +831,8 @@ def load_journal_and_settings_for_gui(price_file_mandatory=False,
         cannot_start_dialog(str(e))
         sys.exit(4)
     try:
-        if read_journal:
-            journal = Journal.from_file(ledger_file, price_file)
-        else:
-            journal = Journal.from_file_unloaded(ledger_file, price_file)
+        from ledgerhelpers.journal import Journal
+        journal = Journal.from_file(ledger_file, price_file)
     except Exception, e:
         cannot_start_dialog("Cannot open ledger file: %s" % e)
         sys.exit(5)

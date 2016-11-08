@@ -166,11 +166,32 @@ editabletransactionview button {
             self.add_line()
         acctswidgets = dict((w[0], n) for n, w in enumerate(self.lines))
         if widget in acctswidgets:
+            # If the account in the account widget has an associated
+            # default commodity, then we set the default commodity of the
+            # amount widget to the commodity for the account.
             account = widget.get_text().strip()
             amountwidget = self.lines[acctswidgets[widget]][1]
             c = self._get_default_commodity(account)
             if c:
                 amountwidget.set_default_commodity(c)
+        amtwidgets = dict((w[1], n) for n, w in enumerate(self.lines))
+        if widget in amtwidgets:
+            # If the amount widget has an amount, and the account associated
+            # with it does not have a default commodity, and the widget itself
+            # has a default commodity that differs from its current amount's
+            # commodity, then we set the default commodity of the amount widget
+            # to match the commodity of the amount entered in it.
+            # This is extremely useful when clients of this data entry grid
+            # are autofilling this grid, but haven't yet given us a default
+            # commodity getter to discover account commodities.
+            if widget.get_amount():
+                currdef = widget.get_default_commodity()
+                currcom = widget.get_amount().commodity
+                accountwidget = self.lines[amtwidgets[widget]][0]
+                account = accountwidget.get_text().strip()
+                c = self._get_default_commodity(account)
+                if not c and str(currdef) != str(currcom):
+                    widget.set_default_commodity(currcom)
         if widget in [x[0] for x in self.lines] + [x[1] for x in self.lines]:
             self._postings_modified = True
 
@@ -182,6 +203,13 @@ editabletransactionview button {
         getter cannot find a default commodity, it must return None.
         """
         self._default_commodity_getter = getter
+        for line in self.lines:
+            accountwidget = line[0]
+            amountwidget = line[1]
+            account = accountwidget.get_text().strip()
+            c = self._get_default_commodity(account)
+            if c:
+                amountwidget.set_default_commodity(c)
 
     def _get_default_commodity(self, account_name):
         getter = getattr(self, "_default_commodity_getter", None)

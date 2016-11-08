@@ -1,6 +1,9 @@
 import datetime
 import ledgerhelpers as m
+import ledgerhelpers.journal as journal
+import ledgerhelpers.programs.addtrans as addtrans
 import test.test_base as base
+import tempfile
 from unittest import TestCase as T
 
 
@@ -8,10 +11,35 @@ class TestJournal(T):
 
     def test_journal_with_simple_transaction(self):
         c = base.datapath("simple_transaction.dat")
-        j = m.Journal.from_file(c, None)
+        j = journal.Journal.from_file(c, None)
         payees = j.all_payees()
         self.assertListEqual(payees, ["beer"])
-        ts = j.transactions_with_payee("beer")
+        accts, commos = j.accounts_and_last_commodity_for_account()
+        expaccts = ["Accounts:Cash", "Expenses:Drinking"]
+        self.assertListEqual(accts, expaccts)
+        self.assertEqual(commos["Expenses:Drinking"], "1.00 CHF")
+
+    def test_reload_works(self):
+        with tempfile.NamedTemporaryFile() as f:
+            data = file(base.datapath("simple_transaction.dat")).read()
+            f.write(data)
+            f.flush()
+            j = journal.Journal.from_file(f.name, None)
+            _, commos = j.accounts_and_last_commodity_for_account()
+            self.assertEqual(commos["Expenses:Drinking"], "1.00 CHF")
+            data = data.replace("CHF", "EUR")
+            f.write(data)
+            f.flush()
+            _, commos = j.accounts_and_last_commodity_for_account()
+            self.assertEqual(commos["Expenses:Drinking"], "1.00 EUR")
+
+
+class TestAddtrans(T):
+
+    def test_transactions_with_payee_match(self):
+        c = base.datapath("simple_transaction.dat")
+        j = journal.Journal.from_file(c, None)
+        ts = addtrans.transactions_with_payee("beer", j.internal_parsing())
         self.assertEqual(ts[0].payee, "beer")
 
 

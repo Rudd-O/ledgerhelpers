@@ -195,6 +195,8 @@ class PriceGatheringDatabase(Gtk.ListStore):
     def add_to_gather_list(self, commodity, datasource, fetch_prices_in):
         if self.commodities_added.get(str(commodity)):
             return
+        if isinstance(commodity, ledger.Amount):
+            commodity = commodity.commodity
         assert isinstance(commodity, ledger.Commodity), commodity
         assert isinstance(datasource, QuoteSource)
         for f in fetch_prices_in:
@@ -334,7 +336,6 @@ class PriceGatherer(GObject.GObject):
                         error,
                     )
                     traceback.print_exc()
-                    print >> sys.stderr
         GObject.idle_add(self.emit, "gathering-done")
 
     def gather_quotes(self, sync=False):
@@ -619,12 +620,12 @@ class UpdatePricesCommon(object):
         recs = list(self.gatherer.database.get_prices())
         if recs:
             lines = self.journal.generate_price_records(recs)
-            self.journal.add_text_to_price_file(lines, reload_journal=False)
+            self.journal.add_text_to_price_file(lines)
 
     def output_errors(self):
         recs = list(self.gatherer.database.get_errors())
         if recs:
-            print >> sys.stderr, "Therer were errors obtaining prices:"
+            print >> sys.stderr, "There were errors obtaining prices:"
         for comm, error in recs:
             print "* Gathering %s: %s" % (comm, error)
         return bool(recs)
@@ -811,6 +812,7 @@ class UpdatePricesApp(
 def main(argv):
     p = get_argparser()
     args = p.parse_args(argv[1:])
+    ledgerhelpers.enable_debugging(args.debug)
 
     GObject.threads_init()
 
