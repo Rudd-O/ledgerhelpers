@@ -19,6 +19,25 @@ IFCHANGED = "ifchanged"
 CMD_GET_A_LCFA_C = "get_accounts_last_commodity_for_account_and_commodities"
 
 
+def transactions_with_payee(payee,
+                            internal_parsing,
+                            case_sensitive=True):
+    """Given a payee string, and an internal_parsing() result from the
+    journal, return the transactions that substring match the payee."""
+    transes = []
+    for xact in internal_parsing:
+        if not hasattr(xact, "payee"):
+            continue
+        left = xact.payee
+        right = payee
+        if not case_sensitive:
+            left = left.lower()
+            right = right.lower()
+        if left == right:
+            transes.append(xact)
+    return transes
+
+
 class Joinable(threading.Thread):
     exception = None
 

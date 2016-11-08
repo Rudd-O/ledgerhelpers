@@ -8,6 +8,7 @@ from gi.repository import Gdk
 from gi.repository import Gtk
 
 import ledgerhelpers as h
+from ledgerhelpers import gui
 from ledgerhelpers.dateentry import DateEntry
 from ledgerhelpers.transactionstatebutton import TransactionStateButton
 
@@ -42,7 +43,7 @@ editabletransactionview button {
 """
 
     def __init__(self):
-        h.add_css(self.css)
+        gui.add_css(self.css)
         Gtk.Grid.__init__(self)
         self.set_column_spacing(0)
 
@@ -71,7 +72,7 @@ editabletransactionview button {
         container.attach(self.clearing, 2, 0, 1, 1)
         self.clearing.connect("clicked", self.child_changed)
 
-        self.payee = h.EagerCompletingEntry()
+        self.payee = gui.EagerCompletingEntry()
         self.payee.set_hexpand(True)
         self.payee.set_activates_default(True)
         self.payee.set_size_request(300, -1)
@@ -283,7 +284,7 @@ editabletransactionview button {
         self._postings_modified = False
 
     def add_line(self):
-        account = h.EagerCompletingEntry()
+        account = gui.EagerCompletingEntry()
         account.set_hexpand(True)
         account.set_width_chars(40)
         account.set_activates_default(True)
@@ -294,7 +295,7 @@ editabletransactionview button {
         hid3 = account.connect("changed", self.child_changed)
         account._handler_ids = [hid3]
 
-        amount = h.LedgerAmountWithPriceEntry(display=False)
+        amount = gui.LedgerAmountWithPriceEntry(display=False)
         amount.set_activates_default(True)
         amount.set_placeholder_text("Amount")
         hid3 = amount.connect("changed", self.child_changed)

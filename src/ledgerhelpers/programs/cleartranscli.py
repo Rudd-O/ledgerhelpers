@@ -6,6 +6,7 @@ import re
 import sys
 sys.path.append(os.path.dirname(__file__))
 import ledgerhelpers as common
+from ledgerhelpers import gui
 
 
 date_re = "^([0-9][0-9][0-9][0-9].[0-9][0-9].[0-9][0-9])(=[0-9][0-9][0-9][0-9].[0-9][0-9].[0-9][0-9]|)\\s+(.+)"
@@ -77,5 +78,5 @@ def clear(f):
 
 
 def main():
-    ledger_file = common.find_ledger_file_for_gui()
+    ledger_file = gui.find_ledger_file_for_gui()
     return clear(ledger_file)

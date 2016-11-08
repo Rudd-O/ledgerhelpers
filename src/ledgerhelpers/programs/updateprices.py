@@ -7,15 +7,16 @@ import httplib
 import json
 import ledger
 import ledgerhelpers
+from ledgerhelpers import gui
 import threading
 import traceback
 import urlparse
 import sys
 import yahoo_finance
 
-from gi.repository import GObject
 import gi
 gi.require_version("Gtk", "3.0")
+from gi.repository import GObject
 from gi.repository import Gtk
 
 
@@ -642,7 +643,7 @@ class UpdatePricesCommon(object):
 class UpdatePricesApp(
     UpdatePricesCommon,
     UpdatePricesWindow,
-    ledgerhelpers.EscapeHandlingMixin
+    gui.EscapeHandlingMixin
 ):
 
     def __init__(self, journal, preferences):
@@ -816,7 +817,7 @@ def main(argv):
 
     GObject.threads_init()
 
-    journal, settings = ledgerhelpers.load_journal_and_settings_for_gui(
+    journal, settings = gui.load_journal_and_settings_for_gui(
         price_file_mandatory=True
     )
     klass = UpdatePricesApp if not args.batch else UpdatePricesCommon

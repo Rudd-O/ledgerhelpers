@@ -13,7 +13,6 @@ def main():
     j = journal.Journal.from_file(common.find_ledger_file(), None)
     accts, commodities = j.accounts_and_last_commodity_for_account()
 
-
     when = common.prompt_for_date(
         sys.stdin, sys.stdout,
         "When?",

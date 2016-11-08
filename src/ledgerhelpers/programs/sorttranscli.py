@@ -6,11 +6,11 @@ import collections
 import datetime
 import itertools
 import subprocess
-import tempfile
 
 import ledgerhelpers
 from ledgerhelpers import diffing
 from ledgerhelpers import parser
+from ledgerhelpers import gui
 
 
 def get_argparser():
@@ -55,7 +55,7 @@ def main(argv):
     p = get_argparser()
     args = p.parse_args(argv[1:])
     assert not args.assume_yes
-    ledgerfile = ledgerhelpers.find_ledger_file_for_gui()
+    ledgerfile = gui.find_ledger_file_for_gui()
     try:
         leftcontents = codecs.open(ledgerfile, "rb", "utf-8").read()
         items = parser.lex_ledger_file_contents(leftcontents, debug=args.debug)
@@ -65,14 +65,18 @@ def main(argv):
         except subprocess.CalledProcessError, e:
             if args.debug:
                 raise
-            ledgerhelpers.FatalError("Meld failed",
-                       "Meld process failed with return code %s" % e.returncode,
-                       outside_mainloop=True)
+            gui.FatalError(
+                "Meld failed",
+                "Meld process failed with return code %s" % e.returncode,
+                outside_mainloop=True
+            )
             return e.returncode
     except Exception, e:
         if args.debug:
             raise
-        ledgerhelpers.FatalError("Transaction sort failed",
-                   "An unexpected error took place:\n%s" % e,
-                   outside_mainloop=True)
+        gui.FatalError(
+            "Transaction sort failed",
+            "An unexpected error took place:\n%s" % e,
+            outside_mainloop=True
+        )
         return 9

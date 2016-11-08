@@ -6,13 +6,13 @@ import logging
 import traceback
 
 from gi.repository import GObject
-import gi; gi.require_version("Gdk", "3.0")
-from gi.repository import Gdk
 import gi; gi.require_version("Gtk", "3.0")
 from gi.repository import Gtk
 from gi.repository import Pango
 
 import ledgerhelpers as common
+from ledgerhelpers import gui
+from ledgerhelpers import journal
 import ledgerhelpers.editabletransactionview as ed
 
 
@@ -22,24 +22,7 @@ ASYNC_LOADING_ACCOUNTS_MESSAGE = (
 )
 
 
-def transactions_with_payee(payee,
-                            internal_parsing,
-                            case_sensitive=True):
-    transes = []
-    for xact in internal_parsing:
-        if not hasattr(xact, "payee"):
-            continue
-        left = xact.payee
-        right = payee
-        if not case_sensitive:
-            left = left.lower()
-            right = right.lower()
-        if left == right:
-            transes.append(xact)
-    return transes
-
-
-class AddTransWindow(Gtk.Window, common.EscapeHandlingMixin):
+class AddTransWindow(Gtk.Window, gui.EscapeHandlingMixin):
 
     def __init__(self):
         Gtk.Window.__init__(self, title="Add transaction")
@@ -57,7 +40,7 @@ class AddTransWindow(Gtk.Window, common.EscapeHandlingMixin):
 
         row += 1
 
-        self.transaction_view = common.LedgerTransactionView()
+        self.transaction_view = gui.LedgerTransactionView()
         self.transaction_view.set_vexpand(True)
         grid.attach(self.transaction_view, 0, row, 2, 1)
 
@@ -82,7 +65,7 @@ class AddTransWindow(Gtk.Window, common.EscapeHandlingMixin):
         self.add_button.grab_default()
 
 
-class AddTransApp(AddTransWindow, common.EscapeHandlingMixin):
+class AddTransApp(AddTransWindow, gui.EscapeHandlingMixin):
 
     logger = logging.getLogger("addtrans")
     internal_parsing = []
@@ -123,7 +106,7 @@ class AddTransApp(AddTransWindow, common.EscapeHandlingMixin):
         self.reload_completion_data()
 
     def reload_completion_data(self):
-        common.g_async(
+        gui.g_async(
             lambda: self.journal.internal_parsing(),
             lambda payees: self.internal_parsing_loaded(payees),
             self.journal_load_failed,
@@ -131,7 +114,7 @@ class AddTransApp(AddTransWindow, common.EscapeHandlingMixin):
 
     def internal_parsing_loaded(self, internal_parsing):
         self.internal_parsing = internal_parsing
-        common.g_async(
+        gui.g_async(
             lambda: self.journal.all_payees(),
             lambda payees: self.all_payees_loaded(payees),
             self.journal_load_failed,
@@ -140,7 +123,7 @@ class AddTransApp(AddTransWindow, common.EscapeHandlingMixin):
     def all_payees_loaded(self, payees):
         self.payees = payees
         self.transholder.set_payees_for_completion(self.payees)
-        common.g_async(
+        gui.g_async(
             lambda: self.journal.accounts_and_last_commodity_for_account(),
             lambda r: self.accounts_and_last_commodities_loaded(*r),
             self.journal_load_failed,
@@ -161,7 +144,7 @@ class AddTransApp(AddTransWindow, common.EscapeHandlingMixin):
 
     def journal_load_failed(self, e):
         traceback.print_exc()
-        common.FatalError(
+        gui.FatalError(
             "Add transaction loading failed",
             "An unexpected error took place:\n%s" % e,
         )
@@ -180,7 +163,7 @@ class AddTransApp(AddTransWindow, common.EscapeHandlingMixin):
         self.try_autofill(emitter, text)
 
     def try_autofill(self, transaction_view, autofill_text):
-        ts = transactions_with_payee(
+        ts = journal.transactions_with_payee(
             autofill_text,
             self.internal_parsing,
             case_sensitive=False
@@ -257,7 +240,7 @@ def main():
 
     GObject.threads_init()
 
-    journal, s = common.load_journal_and_settings_for_gui()
+    journal, s = gui.load_journal_and_settings_for_gui()
     klass = AddTransApp
     win = klass(journal, s)
     win.connect("delete-event", Gtk.main_quit)

@@ -1,7 +1,6 @@
 import datetime
 import ledgerhelpers as m
 import ledgerhelpers.journal as journal
-import ledgerhelpers.programs.addtrans as addtrans
 import test.test_base as base
 import tempfile
 from unittest import TestCase as T
@@ -33,13 +32,10 @@ class TestJournal(T):
             _, commos = j.accounts_and_last_commodity_for_account()
             self.assertEqual(commos["Expenses:Drinking"], "1.00 EUR")
 
-
-class TestAddtrans(T):
-
     def test_transactions_with_payee_match(self):
         c = base.datapath("simple_transaction.dat")
         j = journal.Journal.from_file(c, None)
-        ts = addtrans.transactions_with_payee("beer", j.internal_parsing())
+        ts = journal.transactions_with_payee("beer", j.internal_parsing())
         self.assertEqual(ts[0].payee, "beer")
 
 
