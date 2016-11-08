@@ -144,7 +144,7 @@ def generate_record(title, date, auxdate, state, accountamounts,
     (account, amount)
     """
     def stramt(amt):
-        assert type(amt) not in (tuple, list)
+        assert type(amt) not in (tuple, list), amt
         if not amt:
             return ""
         return str(amt).strip()
