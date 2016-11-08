@@ -60,7 +60,7 @@ setup(
 	packages=["ledgerhelpers",
               "ledgerhelpers.programs"],
 	data_files = data_files,
-	scripts=["bin/%s" % p for p in programs] + ["toport/sortpostings"],
+	scripts=["bin/%s" % p for p in programs],
 	keywords="accounting ledger ledger-cli",
 	requires=["ledger", "yahoo_finance"],
 	zip_safe=False,
