@@ -238,6 +238,7 @@ _css_adjusted = {}
 
 
 def add_css(css):
+    # Must only ever be called at runtime, not at import time.
     global _css_adjusted
     if css not in _css_adjusted:
         style_provider = Gtk.CssProvider()
@@ -748,6 +749,7 @@ ledgertransactionview {
 """
 
     def __init__(self, *args):
+        add_css(self.css)
         Gtk.Box.__init__(self)
         self.textview = EditableTabFocusFriendlyTextView(*args)
         self.textview.override_font(
@@ -770,7 +772,6 @@ ledgertransactionview {
 
 
 LedgerTransactionView.set_css_name("ledgertransactionview")
-add_css(LedgerTransactionView.css)
 
 
 class EscapeHandlingMixin(object):

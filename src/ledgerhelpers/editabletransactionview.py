@@ -42,6 +42,7 @@ editabletransactionview button {
 """
 
     def __init__(self):
+        h.add_css(self.css)
         Gtk.Grid.__init__(self)
         self.set_column_spacing(0)
 
@@ -375,4 +376,3 @@ editabletransactionview button {
 
 
 EditableTransactionView.set_css_name("editabletransactionview")
-h.add_css(EditableTransactionView.css)
