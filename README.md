@@ -20,9 +20,7 @@ in your project to make it easier to develop software compatible with Ledger.
 What can you do with these programs
 -----------------------------------
 
-* Enter simple purchases and other two-line items with
-  [buy](https://github.com/Rudd-O/ledgerhelpers/blob/master/bin/buy).
-* Enter multiline transactions with
+* Enter transactions easily with
   [addtrans](https://github.com/Rudd-O/ledgerhelpers/blob/master/bin/addtrans).
 * Update your price quotes with
   [updateprices](https://github.com/Rudd-O/ledgerhelpers/blob/master/bin/updateprices).

@@ -28,7 +28,6 @@ classifiers = [
 ]
 
 programs = [
-    "buy",
     "withdraw-cli",
     "cleartrans-cli",
     "sorttrans-cli",
