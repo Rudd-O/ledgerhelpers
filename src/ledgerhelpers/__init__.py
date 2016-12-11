@@ -254,6 +254,9 @@ class Settings(dict):
             del self.data[item]
             self.persist()
 
+    def keys(self):
+        return self.data.keys()
+
     def get(self, item, default):
         return self.data.get(item, default)
 

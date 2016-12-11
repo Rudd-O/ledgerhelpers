@@ -286,11 +286,15 @@ class PriceGatherer(GObject.GObject):
     ):
         DontQuote = self.quoters.get("DontQuote", self.quoters.values()[0])
         default = "$"
-        coms = list(journal.commodities())
+        coms = [c.strip_annotations().commodity for c in journal.commodities()]
         strcoms = [str(c) for c in coms]
         if "USD" in strcoms and "$" not in strcoms:
             default = "USD"
+        already = dict()
         for c in coms:
+            if str(c) in already:
+                continue
+            already[str(c)] = True
             quoter = self.quoters.values()[0]
             if str(c) in ["USD", "$"] and default in ["USD", "$"]:
                 quoter = DontQuote
