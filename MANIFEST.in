@@ -2,3 +2,4 @@ include README.md
 include toport/*
 include doc/*
 include applications/*.desktop
+include test/dogtail/*.py
