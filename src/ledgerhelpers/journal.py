@@ -191,7 +191,7 @@ class Journal(JournalCommon):
         with self.slave_lock:
             try:
                 self.pipe.send(
-                    ("get_accounts_last_commodity_for_account_and_commodities",
+                    (CMD_GET_A_LCFA_C,
                      IFCHANGED if "accounts" in self.cache
                      else UNCONDITIONAL)
                 )
