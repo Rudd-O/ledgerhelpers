@@ -188,7 +188,8 @@ class LedgerAmountEntry(Gtk.Grid):
     def set_default_commodity(self, commodity):
         if isinstance(commodity, ledger.Amount):
             commodity = commodity.commodity
-        self.default_commodity = commodity
+        if str(self.default_commodity) != str(commodity):
+            self.default_commodity = commodity
         self.emit("changed")
 
     def is_focus(self):
