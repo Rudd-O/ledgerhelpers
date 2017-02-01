@@ -317,12 +317,12 @@ class JournalSlave(JournalCommon, Process):
         commos = dict()
         amts = dict()
         for post in self.journal.query(""):
-            for post in post.xact.posts():
-                if str(post.account) not in accts:
-                    accts.append(str(post.account))
-                comm = post.amount / post.amount
+            for subpost in post.xact.posts():
+                if str(subpost.account) not in accts:
+                    accts.append(str(subpost.account))
+                comm = subpost.amount / subpost.amount
                 comm.commodity = comm.commodity.strip_annotations()
-                commos[str(post.account)] = str(comm)
+                commos[str(subpost.account)] = str(comm)
                 amts[str(comm)] = True
         self.accounts = accts
         self.last_commodity_for_account = commos
