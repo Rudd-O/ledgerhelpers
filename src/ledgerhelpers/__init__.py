@@ -85,9 +85,11 @@ class LedgerParseError(ValueError):
     pass
 
 
-def find_ledger_file():
+def find_ledger_file(ledger_file=None):
     """Returns main ledger file path or raise exception if it cannot be \
-found."""
+found.  If ledger_file is not None, use that path."""
+    if ledger_file is not None:
+        return os.path.abspath(ledger_file)
     ledgerrcpath = os.path.abspath(os.path.expanduser("~/.ledgerrc"))
     if "LEDGER_FILE" in os.environ:
         return os.path.abspath(os.path.expanduser(os.environ["LEDGER_FILE"]))
@@ -113,9 +115,11 @@ def add_months(sourcedate, months):
     return datetime.date(year,month,day)
 
 
-def find_ledger_price_file():
+def find_ledger_price_file(price_file=None):
     """Returns main ledger file path or raise exception if it cannot be \
-found."""
+found.  If price_file is not None, use that path."""
+    if price_file is not None:
+        return os.path.abspath(price_file)
     ledgerrcpath = os.path.abspath(os.path.expanduser("~/.ledgerrc"))
     if "LEDGER_PRICE_DB" in os.environ:
         return os.path.abspath(os.path.expanduser(os.environ["LEDGER_PRICE_DB"]))

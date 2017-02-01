@@ -13,6 +13,7 @@ from gi.repository import Pango
 import ledgerhelpers as common
 from ledgerhelpers import gui
 from ledgerhelpers import journal
+from ledgerhelpers.programs import common as common_programs
 import ledgerhelpers.editabletransactionview as ed
 
 
@@ -227,7 +228,8 @@ class AddTransApp(AddTransWindow, gui.EscapeHandlingMixin):
 
 def get_argparser():
     parser = argparse.ArgumentParser(
-        'Add new transactions to your Ledger file'
+        'Add new transactions to your Ledger file',
+        parents=[common_programs.get_common_argparser()]
     )
     parser.add_argument('--debug', dest='debug', action='store_true',
                         help='activate debugging')
@@ -240,7 +242,10 @@ def main():
 
     GObject.threads_init()
 
-    journal, s = gui.load_journal_and_settings_for_gui()
+    journal, s = gui.load_journal_and_settings_for_gui(
+        ledger_file=args.file,
+        price_file=args.pricedb,
+    )
     klass = AddTransApp
     win = klass(journal, s)
     win.connect("delete-event", Gtk.main_quit)

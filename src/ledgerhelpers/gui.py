@@ -82,14 +82,16 @@ class EagerCompletion(Gtk.EntryCompletion):
         return False
 
 
-def load_journal_and_settings_for_gui(price_file_mandatory=False):
+def load_journal_and_settings_for_gui(price_file_mandatory=False,
+                                      ledger_file=None,
+                                      price_file=None):
     try:
-        ledger_file = ledgerhelpers.find_ledger_file()
+        ledger_file = ledgerhelpers.find_ledger_file(ledger_file)
     except Exception, e:
         cannot_start_dialog(str(e))
         sys.exit(4)
     try:
-        price_file = ledgerhelpers.find_ledger_price_file()
+        price_file = ledgerhelpers.find_ledger_price_file(price_file)
     except ledgerhelpers.LedgerConfigurationError, e:
         if price_file_mandatory:
             cannot_start_dialog(str(e))
