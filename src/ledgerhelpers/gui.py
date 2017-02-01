@@ -147,6 +147,7 @@ class LedgerAmountEntry(Gtk.Grid):
     __gsignals__ = {
         'changed': (GObject.SIGNAL_RUN_LAST, None, ())
     }
+    default_commodity = None
 
     def show(self):
         Gtk.Grid.show(self)
