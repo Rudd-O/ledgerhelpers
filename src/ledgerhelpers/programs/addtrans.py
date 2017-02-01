@@ -43,6 +43,7 @@ class AddTransWindow(Gtk.Window, gui.EscapeHandlingMixin):
 
         self.transaction_view = gui.LedgerTransactionView()
         self.transaction_view.set_vexpand(True)
+        self.transaction_view.get_accessible().set_name("Transaction preview")
         grid.attach(self.transaction_view, 0, row, 2, 1)
 
         row += 1
