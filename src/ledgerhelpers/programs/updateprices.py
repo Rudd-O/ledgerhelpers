@@ -815,6 +815,10 @@ class UpdatePricesApp(
 
 
 def main(argv):
+    for datum in "PUBLIC_API_URL OAUTH_API_URL DATATABLES_URL".split():
+        if getattr(yahoo_finance.yql, datum).startswith("http:"):
+            setattr(yahoo_finance.yql, datum, "https" + yahoo_finance.yql.PUBLIC_API_URL[4:])
+
     p = get_argparser()
     args = p.parse_args(argv[1:])
     ledgerhelpers.enable_debugging(args.debug)
