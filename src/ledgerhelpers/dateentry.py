@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/python2
 
 # This code is imported straight from the Kiwi codebase, and ported to work
 # with GTK+ 3.x.
