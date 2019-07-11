@@ -19,7 +19,7 @@ import threading
 import time
 import tty
 
-__version__ = "0.2.5"
+__version__ = "0.2.6"
 
 
 CURSOR_UP = "\033[F"
