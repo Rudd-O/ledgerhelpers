@@ -4,6 +4,9 @@ import glob
 from setuptools import setup
 import os
 import platform
+import sys
+
+assert sys.version_info.major == 3, "This program can no longer be built for Python 2"
 
 dir = os.path.dirname(__file__)
 path_to_main_file = os.path.join(dir, "src/ledgerhelpers/__init__.py")
@@ -22,8 +25,8 @@ classifiers = [
 'Intended Audience :: End Users/Desktop',
 'License :: OSI Approved :: GNU General Public License v2 or later (GPLv2+)',
 'Operating System :: POSIX :: Linux',
-'Programming Language :: Python :: 2 :: Only',
-'Programming Language :: Python :: 2.7',
+'Programming Language :: Python :: 3 :: Only',
+'Programming Language :: Python :: 3.6',
 'Topic :: Office/Business :: Financial :: Accounting',
 ]
 
