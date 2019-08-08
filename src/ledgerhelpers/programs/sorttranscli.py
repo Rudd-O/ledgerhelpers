@@ -7,7 +7,6 @@ import datetime
 import itertools
 import subprocess
 
-import ledgerhelpers
 from ledgerhelpers import diffing
 from ledgerhelpers import parser
 from ledgerhelpers import gui

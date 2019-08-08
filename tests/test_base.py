@@ -7,4 +7,5 @@ def datapath(filename):
 
 
 def data(filename):
-    return codecs.open(datapath(filename), "rb", "utf-8").read()
+    with codecs.open(datapath(filename), "rb", "utf-8") as f:
+        return f.read()

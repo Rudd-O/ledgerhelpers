@@ -1,6 +1,6 @@
 #!/usr/bin/python3
 
-import ledgerhelpers
+import ledgerhelpers.legacy
 from ledgerhelpers import diffing
 
 
@@ -32,7 +32,7 @@ def pos_within_items_to_row_and_col(pos, items):
 
 
 def parse_date_from_transaction_contents(contents):
-    return ledgerhelpers.parse_date("".join(contents))
+    return ledgerhelpers.legacy.parse_date("".join(contents))
 
 
 class Token(object):

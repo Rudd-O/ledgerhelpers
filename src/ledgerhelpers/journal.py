@@ -5,6 +5,7 @@ import collections
 import errno
 import ledger
 from ledgerhelpers import parser, debug_time
+import ledgerhelpers.legacy_needsledger as hln
 import logging
 from multiprocessing import Process, Pipe
 import os
@@ -97,7 +98,7 @@ class JournalCommon():
             files.append(self.price_path)
         if self.path:
             files.append(self.path)
-        text = "\n".join(file(x).read() for x in files)
+        text = "\n".join(open(x).read() for x in files)
         return text
 
     def get_unitext(self):
@@ -255,8 +256,7 @@ class Journal(JournalCommon):
             return self.internal_parsing_cache
 
     def generate_record(self, *args):
-        from ledgerhelpers import generate_record
-        return generate_record(*args)
+        return hln.generate_record(*args)
 
     def generate_price_records(self, prices):
         from ledgerhelpers import generate_price_records

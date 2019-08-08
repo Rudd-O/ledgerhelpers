@@ -5,17 +5,17 @@ import os
 import re
 import sys
 sys.path.append(os.path.dirname(__file__))
-import ledgerhelpers as common
+import ledgerhelpers.legacy as common
 from ledgerhelpers import gui
 
 
 date_re = "^([0-9][0-9][0-9][0-9].[0-9][0-9].[0-9][0-9])(=[0-9][0-9][0-9][0-9].[0-9][0-9].[0-9][0-9]|)\\s+(.+)"
-date_re = re.compile(date_re, re.DOTALL)
+date_re = re.compile(date_re, re.RegexFlag.DOTALL)
 
 
 def clear(f):
     changed = False
-    lines = file(f).readlines()
+    lines = open(f).readlines()
 
     for n, line in enumerate(lines):
         m = date_re.match(line)
@@ -67,7 +67,7 @@ def clear(f):
         else:
             pass
     if changed:
-        y = file(f + ".new",  "w")
+        y = open(f + ".new",  "w")
         y.write("".join(lines))
         y.flush()
         try:

@@ -40,7 +40,7 @@ class DontQuote(QuoteSource):
     def __str__(self):
         return "skip quoting"
 
-    def get_quote(self, commodity, denominated_in):
+    def get_quote(self, commodity, denominated_in):  # @UnusedVariable
         return None, None
 
 
@@ -129,7 +129,7 @@ class YahooFinanceCurrencies(YahooFinanceCommodities):
 
 
 def json_from_uri(uri):
-    c = http.client.HTTPSConnection(urllib.parse.urlsplit(uri).netloc)
+    c = http.client.HTTPSConnection(urllib.parse.urlsplit(uri).netloc)  # @UndefinedVariable
     c.request('GET', uri)
     response = c.getresponse().read()
     try:
@@ -655,7 +655,7 @@ class UpdatePricesApp(
         UpdatePricesWindow.__init__(self)
 
         self.fetch_level = 0
-        self.connect("delete-event", lambda *a: self.save_preferences())
+        self.connect("delete-event", lambda *unused_a: self.save_preferences())
         self.activate_escape_handling()
 
         self.gatherer_view.set_model(self.gatherer.database)
@@ -717,7 +717,7 @@ class UpdatePricesApp(
         self.disallow_save()
         self.enable_cell_editing()
 
-    def enable_cell_editing(self, w=None):
+    def enable_cell_editing(self, unused_w=None):
         self.gatherer_view.quotesource_renderer.set_property(
             "editable",
             True
@@ -727,7 +727,7 @@ class UpdatePricesApp(
             True
         )
 
-    def disable_cell_editing(self, w=None):
+    def disable_cell_editing(self, unused_w=None):
         self.gatherer_view.quotesource_renderer.set_property(
             "editable",
             False
@@ -737,28 +737,28 @@ class UpdatePricesApp(
             False
         )
 
-    def disallow_save(self, w=None):
+    def disallow_save(self, unused_w=None):
         self.save_button.set_sensitive(False)
 
-    def allow_save(self, w=None):
+    def allow_save(self, unused_w=None):
         self.save_button.set_sensitive(True)
 
-    def focus_save(self, w=None):
+    def focus_save(self, unused_w=None):
         self.save_button.grab_focus()
 
-    def prevent_fetch(self, w=None):
+    def prevent_fetch(self, unused_w=None):
         self.fetch_level -= 1
         self.fetch_button.set_sensitive(self.fetch_level > 0)
 
-    def allow_fetch(self, w=None):
+    def allow_fetch(self, unused_w=None):
         self.fetch_level += 1
         self.fetch_button.set_sensitive(self.fetch_level > 0)
 
-    def on_quotesource_editing_started(self, *a):
+    def on_quotesource_editing_started(self, *unused_a):
         self.prevent_fetch()
         self.suspend_escape_handling()
 
-    def on_quotesource_editing_done(self, cell, path, new_text, *a, **kw):
+    def on_quotesource_editing_done(self, cell, path, new_text, *unused_a, **unused_kw):
         thedict = dict(x for x in cell.props.model)
         try:
             new_quotesource = thedict[new_text]
@@ -770,18 +770,18 @@ class UpdatePricesApp(
         self.allow_fetch()
         self.resume_escape_handling()
 
-    def on_quotesource_editing_canceled(self, *a):
+    def on_quotesource_editing_canceled(self, *unused_a):
         self.allow_fetch()
         self.resume_escape_handling()
 
-    def on_price_in_editing_started(self, cell, entry, *a):
+    def on_price_in_editing_started(self, unused_cell, entry, *unused_a):
         self.prevent_fetch()
         self.suspend_escape_handling()
         text = entry.get_text()
         text = text.split("\n")
         entry.set_text(", ".join(text))
 
-    def on_price_in_editing_done(self, cell, path, new_text, *a, **kw):
+    def on_price_in_editing_done(self, unused_cell, path, new_text, *unused_a, **unused_kw):
         new_currencies = [
             self.journal.commodity(x.strip(), True)
             for x in new_text.split(",")
@@ -794,14 +794,14 @@ class UpdatePricesApp(
         self.allow_fetch()
         self.resume_escape_handling()
 
-    def on_price_in_editing_canceled(self, *a):
+    def on_price_in_editing_canceled(self, *unused_a):
         self.allow_fetch()
         self.resume_escape_handling()
 
-    def do_fetch(self, *a):
+    def do_fetch(self, *unused_a):
         self.gatherer.gather_quotes()
 
-    def save_fetched_prices(self, *a):
+    def save_fetched_prices(self, *unused_a):
         UpdatePricesCommon.save_fetched_prices(self)
         self.emit("delete-event", None)
 

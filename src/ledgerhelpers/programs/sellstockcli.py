@@ -6,7 +6,7 @@ import ledger
 import re
 import subprocess
 import sys
-import ledgerhelpers as common
+import ledgerhelpers.legacy as common
 from ledgerhelpers import gui
 
 
@@ -116,7 +116,7 @@ def matches(string, options):
 
 def main():
     journal, s = gui.load_journal_and_settings_for_gui()
-    accts, commodities = journal.accounts_and_last_commodity_for_account()
+    accts, unused_commodities = journal.accounts_and_last_commodity_for_account()
 
     saleacct = common.prompt_for_account(
         sys.stdin, sys.stdout,

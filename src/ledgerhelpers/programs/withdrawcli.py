@@ -4,13 +4,14 @@ import datetime
 import ledger
 import os
 import sys
-import ledgerhelpers as common
+import ledgerhelpers
+import ledgerhelpers.legacy as common
 import ledgerhelpers.journal as journal
 
 
 def main():
-    s = common.Settings.load_or_defaults(os.path.expanduser("~/.ledgerhelpers.ini"))
-    j = journal.Journal.from_file(common.find_ledger_file(), None)
+    s = ledgerhelpers.Settings.load_or_defaults(os.path.expanduser("~/.ledgerhelpers.ini"))
+    j = journal.Journal.from_file(ledgerhelpers.find_ledger_file(), None)
     accts, commodities = j.accounts_and_last_commodity_for_account()
 
     when = common.prompt_for_date(
