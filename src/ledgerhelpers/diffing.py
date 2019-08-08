@@ -1,4 +1,4 @@
-#!/usr/bin/python2
+#!/usr/bin/python3
 
 import subprocess
 import tempfile
@@ -9,9 +9,9 @@ def three_way_diff(basefilename, leftcontents, rightcontents):
     left and right, launch a three-way diff.
 
     Raises: subprocess.CalledProcessError."""
-    if isinstance(leftcontents, unicode):
+    if isinstance(leftcontents, str):
         leftcontents = leftcontents.encode("utf-8")
-    if isinstance(rightcontents, unicode):
+    if isinstance(rightcontents, str):
         rightcontents = rightcontents.encode("utf-8")
 
     prevfile = tempfile.NamedTemporaryFile(prefix=basefilename + ".previous.")
@@ -34,9 +34,9 @@ def two_way_diff(leftcontents, rightcontents):
     two-way diff view with them.
 
     Raises: subprocess.CalledProcessError."""
-    if isinstance(leftcontents, unicode):
+    if isinstance(leftcontents, str):
         leftcontents = leftcontents.encode("utf-8")
-    if isinstance(rightcontents, unicode):
+    if isinstance(rightcontents, str):
         rightcontents = rightcontents.encode("utf-8")
 
     prevfile = tempfile.NamedTemporaryFile(prefix=".base.")

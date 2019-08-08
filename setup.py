@@ -1,4 +1,4 @@
-#!/usr/bin/python2
+#!/usr/bin/python3
 
 import glob
 from setuptools import setup
@@ -13,7 +13,7 @@ for line in open(path_to_main_file):
 		version = line.split()[-1].strip("'").strip('"')
 		break
 else:
-	raise ValueError, '"__version__" not found in "src/ledgerhelpers/__init__.py"'
+	raise ValueError('"__version__" not found in "src/ledgerhelpers/__init__.py"')
 readme = open(path_to_readme).read(-1)
 
 classifiers = [

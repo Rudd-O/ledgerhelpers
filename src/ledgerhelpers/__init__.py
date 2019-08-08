@@ -1,6 +1,6 @@
-#!/usr/bin/python2
+#!/usr/bin/python3
 
-import cPickle
+import pickle
 import calendar
 import codecs
 import collections
@@ -28,7 +28,7 @@ CURSOR_UP = "\033[F"
 def debug(string, *args):
     if args:
         string = string % args
-    print >> sys.stderr, string
+    print(string, file=sys.stderr)
 
 
 _debug_time = False
@@ -239,7 +239,7 @@ class Settings(dict):
     def load_or_defaults(cls, filename):
         s = cls(filename)
         if os.path.isfile(s.filename):
-            s.data = cPickle.load(open(s.filename, "rb"))
+            s.data = pickle.load(open(s.filename, "rb"))
         try:
             suggester = s["suggester"]
         except KeyError:
@@ -259,14 +259,14 @@ class Settings(dict):
             self.persist()
 
     def keys(self):
-        return self.data.keys()
+        return list(self.data.keys())
 
     def get(self, item, default):
         return self.data.get(item, default)
 
     def persist(self):
         p = open(self.filename, "wb")
-        cPickle.dump(self.data, p)
+        pickle.dump(self.data, p)
         p.flush()
         p.close()
 
@@ -302,11 +302,11 @@ def print_line_ellipsized(fileobj, maxlen, text):
     if len(text) > maxlen:
         text = text[:maxlen]
     fileobj.write(text)
-    print
+    print()
 
 
 def prompt_for_expense(prompt):
-    return raw_input(prompt + " ").strip()
+    return input(prompt + " ").strip()
 
 
 def go_cursor_up(fd):
@@ -315,7 +315,7 @@ def go_cursor_up(fd):
 
 def blank_line(fd, chars):
     fd.write(" " * chars)
-    print
+    print()
 
 
 def prompt_for_date_optional(fdin, fdout, prompt, initial):
@@ -462,14 +462,14 @@ class AccountSuggester(object):
     def suggest(self, words):
         words = [ w.lower() for w in words.split() ]
         account_counts = dict()
-        for account, ws in self.account_to_words.items():
-            for w, c in ws.items():
+        for account, ws in list(self.account_to_words.items()):
+            for w, c in list(ws.items()):
                 if w in words:
                     if not account in account_counts:
                         account_counts[account] = 0
                     account_counts[account] += c
         results = list(reversed(sorted(
-            account_counts.items(), key=lambda x: x[1]
+            list(account_counts.items()), key=lambda x: x[1]
         )))
         if results:
             return results[0][0]
@@ -487,7 +487,7 @@ def parse_date(putative_date, return_format=False):
         try:
             d = datetime.datetime.strptime(putative_date, f).date()
             break
-        except ValueError, e:
+        except ValueError as e:
             continue
     try:
         if return_format:

@@ -87,24 +87,24 @@ def load_journal_and_settings_for_gui(price_file_mandatory=False,
                                       price_file=None):
     try:
         ledger_file = ledgerhelpers.find_ledger_file(ledger_file)
-    except Exception, e:
+    except Exception as e:
         cannot_start_dialog(str(e))
         sys.exit(4)
     try:
         price_file = ledgerhelpers.find_ledger_price_file(price_file)
-    except ledgerhelpers.LedgerConfigurationError, e:
+    except ledgerhelpers.LedgerConfigurationError as e:
         if price_file_mandatory:
             cannot_start_dialog(str(e))
             sys.exit(4)
         else:
             price_file = None
-    except Exception, e:
+    except Exception as e:
         cannot_start_dialog(str(e))
         sys.exit(4)
     try:
         from ledgerhelpers.journal import Journal
         journal = Journal.from_file(ledger_file, price_file)
-    except Exception, e:
+    except Exception as e:
         cannot_start_dialog("Cannot open ledger file: %s" % e)
         sys.exit(5)
     s = ledgerhelpers.Settings.load_or_defaults(
@@ -117,7 +117,7 @@ def find_ledger_file_for_gui():
     try:
         ledger_file = ledgerhelpers.find_ledger_file()
         return ledger_file
-    except Exception, e:
+    except Exception as e:
         cannot_start_dialog(str(e))
         sys.exit(4)
 

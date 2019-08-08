@@ -1,16 +1,16 @@
-#!/usr/bin/python2
+#!/usr/bin/python3
 
 import argparse
 import collections
 import datetime
-import httplib
+import http.client
 import json
 import ledger
 import ledgerhelpers
 from ledgerhelpers import gui
 import threading
 import traceback
-import urlparse
+import urllib.parse
 import sys
 import yahoo_finance
 
@@ -129,7 +129,7 @@ class YahooFinanceCurrencies(YahooFinanceCommodities):
 
 
 def json_from_uri(uri):
-    c = httplib.HTTPSConnection(urlparse.urlsplit(uri).netloc)
+    c = http.client.HTTPSConnection(urllib.parse.urlsplit(uri).netloc)
     c.request('GET', uri)
     response = c.getresponse().read()
     try:
@@ -284,7 +284,7 @@ class PriceGatherer(GObject.GObject):
         map_from_currencystrs_to_quotesources,
         map_from_currencystrs_to_priceins,
     ):
-        DontQuote = self.quoters.get("DontQuote", self.quoters.values()[0])
+        DontQuote = self.quoters.get("DontQuote", list(self.quoters.values())[0])
         default = "$"
         coms = [c.strip_annotations().commodity for c in journal.commodities()]
         strcoms = [str(c) for c in coms]
@@ -295,7 +295,7 @@ class PriceGatherer(GObject.GObject):
             if str(c) in already:
                 continue
             already[str(c)] = True
-            quoter = self.quoters.values()[0]
+            quoter = list(self.quoters.values())[0]
             if str(c) in ["USD", "$"] and default in ["USD", "$"]:
                 quoter = DontQuote
             if str(c) in map_from_currencystrs_to_quotesources:
@@ -333,7 +333,7 @@ class PriceGatherer(GObject.GObject):
                         price,
                         time
                     )
-                except Exception, e:
+                except Exception as e:
                     error = str(e)
                     do(
                         self.database.record_gathered_error,
@@ -605,15 +605,15 @@ class UpdatePricesCommon(object):
 
     def get_ready(self):
         prefquotesources = dict(
-            (cur, self.quoters.get(n, self.quoters.values()[0]))
+            (cur, self.quoters.get(n, list(self.quoters.values())[0]))
             for cur, n
-            in self.preferences["quotesources"].items()
+            in list(self.preferences["quotesources"].items())
             if type(n) is not list
         )
         prefquotecurrencies = dict(
             (cur, [self.journal.commodity(v, True) for v in pins])
             for cur, pins
-            in self.preferences["quotecurrencies"].items()
+            in list(self.preferences["quotecurrencies"].items())
         )
         self.gatherer.load_commodities_from_journal(
             self.journal,
@@ -630,9 +630,9 @@ class UpdatePricesCommon(object):
     def output_errors(self):
         recs = list(self.gatherer.database.get_errors())
         if recs:
-            print >> sys.stderr, "There were errors obtaining prices:"
+            print("There were errors obtaining prices:", file=sys.stderr)
         for comm, error in recs:
-            print "* Gathering %s: %s" % (comm, error)
+            print("* Gathering %s: %s" % (comm, error))
         return bool(recs)
 
     def run(self):
@@ -670,7 +670,7 @@ class UpdatePricesApp(
         UpdatePricesCommon.get_ready(self)
 
         quotesource_model = Gtk.ListStore(str, object)
-        for q in self.quoters.items():
+        for q in list(self.quoters.items()):
             quotesource_model.append(q)
         self.gatherer_view.quotesource_renderer.set_property(
             "model",

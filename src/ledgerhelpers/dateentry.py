@@ -1,4 +1,4 @@
-#!/usr/bin/python2
+#!/usr/bin/python3
 
 # This code is imported straight from the Kiwi codebase, and ported to work
 # with GTK+ 3.x.
@@ -225,7 +225,7 @@ class _DateEntryPopup(Gtk.Window):
         self.set_date(datetime.date.today())
 
     def _popup_grab_window(self):
-        activate_time = 0L
+        activate_time = 0
         win = self.get_window()
         result = Gdk.pointer_grab(win, True, (
             Gdk.EventMask.BUTTON_PRESS_MASK |

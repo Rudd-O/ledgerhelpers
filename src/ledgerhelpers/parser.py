@@ -1,4 +1,4 @@
-#!/usr/bin/python2
+#!/usr/bin/python3
 
 import ledgerhelpers
 from ledgerhelpers import diffing
@@ -32,15 +32,15 @@ def pos_within_items_to_row_and_col(pos, items):
 
 
 def parse_date_from_transaction_contents(contents):
-    return ledgerhelpers.parse_date(u"".join(contents))
+    return ledgerhelpers.parse_date("".join(contents))
 
 
 class Token(object):
 
     def __init__(self, pos, contents):
         self.pos = pos
-        if not isinstance(contents, basestring):
-            contents = u"".join(contents)
+        if not isinstance(contents, str):
+            contents = "".join(contents)
         self.contents = contents
 
     def __str__(self):
@@ -146,7 +146,7 @@ class TokenTransactionWithContext(TokenTransaction):
             t for t in tokens if isinstance(t, TokenTransaction)
         ][0]
         self.pos = pos
-        self.contents = u"".join(t.contents for t in tokens)
+        self.contents = "".join(t.contents for t in tokens)
 
     @property
     def date(self):
@@ -169,14 +169,14 @@ class TokenTransactionPostingAccount(Token):
 
     def __init__(self, pos, contents):
         Token.__init__(self, pos, contents)
-        self.account = u''.join(contents)
+        self.account = ''.join(contents)
 
 
 class TokenTransactionPostingAmount(Token):
 
     def __init__(self, pos, contents):
         Token.__init__(self, pos, contents)
-        self.amount = u''.join(contents)
+        self.amount = ''.join(contents)
 
 
 class TokenEmbeddedTag(Token):
@@ -201,7 +201,7 @@ class TokenTransactionPayee(Token):
 
     def __init__(self, pos, contents):
         Token.__init__(self, pos, contents)
-        self.payee = u''.join(contents)
+        self.payee = ''.join(contents)
 
 
 class LexingError(Exception):
@@ -219,7 +219,7 @@ class EOF(LexingError):
 class GenericLexer(object):
 
     def __init__(self, items):
-        if isinstance(items, basestring) and not isinstance(items, unicode):
+        if isinstance(items, str) and not isinstance(items, str):
             self.items = tuple(items.decode("utf-8"))
         else:
             self.items = tuple(items)
@@ -228,7 +228,7 @@ class GenericLexer(object):
         self._last_emitted_pos = self.pos
         self.tokens = []
 
-    def next(self):
+    def __next__(self):
         """Returns the item at the current position, and advances the position."""
         try:
             t = self.items[self.pos]
@@ -271,7 +271,7 @@ class GenericLexer(object):
 class LedgerTextLexer(GenericLexer):
 
     def __init__(self, text):
-        assert isinstance(text, unicode), type(text)
+        assert isinstance(text, str), type(text)
         GenericLexer.__init__(self, text)
 
     def state_parsing_toplevel_text(self):
@@ -301,16 +301,16 @@ class LedgerTextLexer(GenericLexer):
                 raise LexingError(
                     "unparsable data at line %d, char %d" % (l2, c2)
                 )
-            chars += [self.next()]
+            chars += [next(self)]
         self.emit(TokenWhitespace, chars)
         return
 
     def state_parsing_comment(self):
-        chars = [self.next()]
+        chars = [next(self)]
         while self.more():
             if chars[-1] in CHAR_ENTER and self.peek() not in CHAR_COMMENT:
                 break
-            chars.append(self.next())
+            chars.append(next(self))
         self.emit(TokenComment, chars)
         return self.state_parsing_toplevel_text
 
@@ -327,13 +327,13 @@ class LedgerTextLexer(GenericLexer):
         return self.state_parsing_embedded_directive(TokenEmbeddedPython)
 
     def state_parsing_embedded_directive(self, klass, maybe_multiline=True):
-        chars = [self.next()]
+        chars = [next(self)]
         while self.more():
             if chars[-1] in CHAR_ENTER:
                 if not maybe_multiline:
                     break
                 if self.peek() in CHAR_WHITESPACE + CHAR_ENTER:
-                    chars.append(self.next())
+                    chars.append(next(self))
                     continue
                 if self.peek() in CHAR_COMMENT:
                     self.emit(klass, chars)
@@ -343,16 +343,16 @@ class LedgerTextLexer(GenericLexer):
                     return self.state_parsing_transaction
                 self.emit(klass, chars)
                 return self.state_parsing_toplevel_text
-            chars.append(self.next())
+            chars.append(next(self))
         self.emit(klass, chars)
         return self.state_parsing_toplevel_text
 
     def state_parsing_transaction(self):
-        chars = [self.next()]
+        chars = [next(self)]
         while self.more():
             if chars[-1] in CHAR_ENTER and self.peek() not in CHAR_WHITESPACE:
                 break
-            chars.append(self.next())
+            chars.append(next(self))
         self.emit(TokenTransaction, chars)
         return self.state_parsing_toplevel_text
 
@@ -368,7 +368,7 @@ class LedgerTextLexer(GenericLexer):
                 state = state()
             except LexingError:
                 raise
-            except Exception, e:
+            except Exception as e:
                 l, c, l2, c2 = self._coords()
                 raise LexingError(
                     "bad ledger data between line %d, char %d and line %d, char %d: %s" % (
@@ -388,37 +388,37 @@ class LedgerTransactionLexer(GenericLexer):
             if self.peek() not in "0123456789-/":
                 self.emit(TokenTransactionDate, chars)
                 if self.confirm_next("="):
-                    self.next()
+                    next(self)
                     return self.state_parsing_clearing_date
                 elif self.peek() in CHAR_WHITESPACE:
                     return self.state_parsing_cleared_flag_or_payee
                 else:
                     raise TransactionLexingError("invalid character %s" % self.peek())
-            chars += [self.next()]
+            chars += [next(self)]
         raise TransactionLexingError("incomplete transaction")
 
     def state_parsing_clearing_date(self):
         chars = []
         while self.more():
             if self.peek() not in "0123456789-/":
-                self.next()
+                next(self)
                 self.emit(TokenTransactionSecondaryDate, chars)
                 return self.state_parsing_cleared_flag_or_payee
-            chars += [self.next()]
+            chars += [next(self)]
         raise TransactionLexingError("incomplete transaction")
 
     def state_parsing_cleared_flag_or_payee(self):
         while self.more():
             if self.peek() in CHAR_WHITESPACE:
-                self.next()
+                next(self)
                 continue
             if self.peek() in CHAR_ENTER:
                 break
             if self.confirm_next(CHAR_CLEARED):
-                self.emit(TokenTransactionClearedFlag, [self.next()])
+                self.emit(TokenTransactionClearedFlag, [next(self)])
                 return self.state_parsing_payee
             if self.confirm_next(CHAR_PENDING):
-                self.emit(TokenTransactionPendingFlag, [self.next()])
+                self.emit(TokenTransactionPendingFlag, [next(self)])
                 return self.state_parsing_payee
             return self.state_parsing_payee
         raise TransactionLexingError("incomplete transaction")
@@ -436,14 +436,14 @@ class LedgerTransactionLexer(GenericLexer):
         chars = []
         while self.more():
             if self.peek() in CHAR_ENTER:
-                self.next()
+                next(self)
                 while chars and chars[-1] in CHAR_WHITESPACE:
                     chars = chars[:-1]
                 break
             if self.peek() in CHAR_WHITESPACE and not chars:
-                self.next()
+                next(self)
                 continue
-            chars.append(self.next())
+            chars.append(next(self))
         if allow_empty_values or chars:
             self.emit(klass, chars)
             return next_state
@@ -454,11 +454,11 @@ class LedgerTransactionLexer(GenericLexer):
         while self.more():
             if self.peek() not in CHAR_WHITESPACE:
                 break
-            chars.append(self.next())
+            chars.append(next(self))
         if not chars:
             return
         if self.more() and self.peek() in CHAR_ENTER:
-            self.next()
+            next(self)
             return self.state_parsing_transaction_posting_indentation
         return self.state_parsing_transaction_posting_account
 
@@ -481,7 +481,7 @@ class LedgerTransactionLexer(GenericLexer):
                 while chars[-1] in CHAR_WHITESPACE:
                     chars = chars[:-1]
                 break
-            chars.append(self.next())
+            chars.append(next(self))
         if not chars:
             raise TransactionLexingError("truncated transaction posting")
         self.emit(TokenTransactionPostingAccount, chars)
@@ -505,20 +505,20 @@ class LedgerContextualLexer(GenericLexer):
         while self.more():
             if isinstance(self.peek(), TokenComment):
                 return self.state_parsing_comment
-            token = self.next()
+            token = next(self)
             self.emit(token.__class__, token.contents)
 
     def state_parsing_comment(self):
-        token = self.next()
+        token = next(self)
         if (
             self.more() and
             isinstance(token, TokenComment) and
             isinstance(self.peek(), TokenTransaction)
         ):
-            transaction_token = self.next()
+            transaction_token = next(self)
             additional_comments = []
             while self.more() and isinstance(self.peek(), TokenComment):
-                additional_comments.append(self.next())
+                additional_comments.append(next(self))
             self.emit(TokenTransactionWithContext,
                       [token, transaction_token] + additional_comments)
         else:
@@ -532,7 +532,7 @@ class LedgerContextualLexer(GenericLexer):
                 state = state()
             except LexingError:
                 raise
-            except Exception, e:
+            except Exception as e:
                 raise LexingError(
                     "error parsing ledger data between chunk %d and chunk %d): %s" % (
                         self._last_emitted_pos, self.pos, e
@@ -543,7 +543,7 @@ class LedgerContextualLexer(GenericLexer):
 def lex_ledger_file_contents(text, debug=False):
     lexer = LedgerTextLexer(text)
     lexer.run()
-    concat_lexed = u"".join([x.contents for x in lexer.tokens])
+    concat_lexed = "".join([x.contents for x in lexer.tokens])
     if concat_lexed != text:
         if debug:
             u = "Debugging error lexing text: files differ\n\n"
@@ -551,7 +551,7 @@ def lex_ledger_file_contents(text, debug=False):
         raise LexingError("the lexed contents and the original contents are not the same")
     lexer = LedgerContextualLexer(lexer.tokens)
     lexer.run()
-    concat_lexed = u"".join([ x.contents for x in lexer.tokens ])
+    concat_lexed = "".join([ x.contents for x in lexer.tokens ])
     if concat_lexed != text:
         if debug:
             u = "Debugging error lexing chunks: files differ\n\n"

@@ -1,4 +1,4 @@
-#!/usr/bin/python2
+#!/usr/bin/python3
 
 import datetime
 import ledger
@@ -55,8 +55,8 @@ def main():
         (asset1, -1 * amount1),
         (asset2, amount2),
     ])
-    print "========== Record =========="
-    print "\n".join(lines)
+    print("========== Record ==========")
+    print("\n".join(lines))
     save = common.yesno(
         sys.stdin, sys.stderr,
         "Hit ENTER or y to save it to the file, BACKSPACE or n to skip saving: "

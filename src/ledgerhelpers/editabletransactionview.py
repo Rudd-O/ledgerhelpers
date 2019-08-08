@@ -1,4 +1,4 @@
-#!/usr/bin/python2
+#!/usr/bin/python3
 # coding: utf-8
 
 from gi.repository import GObject
@@ -132,7 +132,7 @@ editabletransactionview button {
                 Gdk.KEY_l: self.clearing_when,
                 Gdk.KEY_p: self.payee,
             }
-            for keyval, obj in keybobjects.items():
+            for keyval, obj in list(keybobjects.items()):
                 if ev.keyval == keyval:
                     obj.grab_focus()
                     return True

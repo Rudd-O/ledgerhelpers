@@ -1,4 +1,4 @@
-#!/usr/bin/python2
+#!/usr/bin/python3
 
 import argparse
 import codecs
@@ -35,7 +35,7 @@ def sort_transactions(items):
             first_transaction_seen = True
         if first_transaction_seen:
             later_dates = itertools.chain(
-                (getattr(items[i], "date", None) for i in xrange(n, len(items))),
+                (getattr(items[i], "date", None) for i in range(n, len(items))),
                 [largest_date]
             )
             for date in later_dates:
@@ -59,10 +59,10 @@ def main(argv):
     try:
         leftcontents = codecs.open(ledgerfile, "rb", "utf-8").read()
         items = parser.lex_ledger_file_contents(leftcontents, debug=args.debug)
-        rightcontents = u"".join(i.contents for i in sort_transactions(items))
+        rightcontents = "".join(i.contents for i in sort_transactions(items))
         try:
             diffing.three_way_diff(ledgerfile, leftcontents, rightcontents)
-        except subprocess.CalledProcessError, e:
+        except subprocess.CalledProcessError as e:
             if args.debug:
                 raise
             gui.FatalError(
@@ -71,7 +71,7 @@ def main(argv):
                 outside_mainloop=True
             )
             return e.returncode
-    except Exception, e:
+    except Exception as e:
         if args.debug:
             raise
         gui.FatalError(
