@@ -18,7 +18,7 @@ import threading
 import time
 import tty
 
-__version__ = "0.3.0"
+__version__ = "0.3.1"
 
 
 def debug(string, *args):
