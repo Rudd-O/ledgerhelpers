@@ -27,7 +27,7 @@ What can you do with these programs
 * Record multi-currency ATM withdrawals with
   [withdraw-cli](https://github.com/Rudd-O/ledgerhelpers/blob/master/bin/withdraw-cli).
 * Record FIFO stock or commodity sales with
-  [sellstock-cli](https://github.com/Rudd-O/ledgerhelpers/blob/master/bin/sellstock).
+  [sellstock-cli](https://github.com/Rudd-O/ledgerhelpers/blob/master/bin/sellstock-cli).
 * Interactively clear transactions with
   [cleartrans-cli](https://github.com/Rudd-O/ledgerhelpers/blob/master/bin/cleartrans-cli).
 * Keep your ledger chronologically sorted with
