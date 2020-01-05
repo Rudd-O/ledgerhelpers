@@ -31,7 +31,7 @@ What can you do with these programs
 * Interactively clear transactions with
   [cleartrans-cli](https://github.com/Rudd-O/ledgerhelpers/blob/master/bin/cleartrans-cli).
 * Keep your ledger chronologically sorted with
-  [sottrans-cli](https://github.com/Rudd-O/ledgerhelpers/blob/master/bin/sorttrans-cli).
+  [sorttrans-cli](https://github.com/Rudd-O/ledgerhelpers/blob/master/bin/sorttrans-cli).
 
 Usage and manuals
 -----------------
