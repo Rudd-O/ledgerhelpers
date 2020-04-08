@@ -161,7 +161,7 @@ def parse_date(putative_date, return_format=False):
             return d, f
         else:
             return d
-    except UnboundLocalError:
+    except UnboundLocalError as e:
         raise ValueError("cannot parse date from format %s: %s" % (f, e))
 
 
