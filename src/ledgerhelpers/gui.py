@@ -40,7 +40,7 @@ def add_css(css):
     global _css_adjusted
     if css not in _css_adjusted:
         style_provider = Gtk.CssProvider()
-        style_provider.load_from_data(css)
+        style_provider.load_from_data(css.encode())
         Gtk.StyleContext.add_provider_for_screen(
             Gdk.Screen.get_default(),
             style_provider,
