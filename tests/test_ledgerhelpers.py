@@ -1,11 +1,17 @@
 import datetime
 import ledgerhelpers as m
-import ledgerhelpers.journal as journal
-import test.test_base as base
+import ledgerhelpers.legacy as mc
+try:
+    import ledgerhelpers.journal as journal
+except ImportError:
+    journal = None
+import tests.test_base as base
 import tempfile
+import unittest
 from unittest import TestCase as T
 
 
+@unittest.skipIf(journal is None, reason="ledger-python is not available on this system")
 class TestJournal(T):
 
     def test_journal_with_simple_transaction(self):
@@ -49,7 +55,7 @@ class TestGenerateRecord(T):
             ("assets", "56 CHF"),
             ("expenses", ""),
         ]
-        res = m.generate_record(title, date, cleared_date, "", accountamounts)
+        res = mc.generate_record(title, date, cleared_date, "", accountamounts)
         self.assertListEqual(
             res,
             """
@@ -67,12 +73,12 @@ class TestGenerateRecord(T):
         ]
         accountamounts = [("assets", "56 CHF"), ("expenses", "")]
         for expected_line, (date, cleared), statechar in cases:
-            res = m.generate_record("x", date, cleared, statechar, accountamounts)[1]
+            res = mc.generate_record("x", date, cleared, statechar, accountamounts)[1]
             self.assertEqual(res, expected_line)
 
     def test_empty_record_auto_goes_last(self):
         accountamounts = [("expenses", ""), ("assets:cash", "56 CHF")]
-        res = m.generate_record("x", datetime.date(2014, 1, 1),
+        res = mc.generate_record("x", datetime.date(2014, 1, 1),
                                 None, "", accountamounts)
         self.assertListEqual(
             res,

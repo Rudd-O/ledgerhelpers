@@ -1,10 +1,11 @@
-#!/usr/bin/python2
+#!/usr/bin/python3
 
 import codecs
 import collections
 import errno
 import ledger
 from ledgerhelpers import parser, debug_time
+import ledgerhelpers.legacy_needsledger as hln
 import logging
 from multiprocessing import Process, Pipe
 import os
@@ -70,13 +71,13 @@ class JournalCommon():
 
         try:
             path_mtime = os.stat(self.path).st_mtime
-        except OSError, e:
+        except OSError as e:
             if e.errno != errno.ENOENT:
                 raise
         try:
             if self.price_path is not None:
                 price_path_mtime = os.stat(self.price_path).st_mtime
-        except OSError, e:
+        except OSError as e:
             if e.errno != errno.ENOENT:
                 raise
 
@@ -97,7 +98,7 @@ class JournalCommon():
             files.append(self.price_path)
         if self.path:
             files.append(self.path)
-        text = "\n".join(file(x).read() for x in files)
+        text = "\n".join(open(x).read() for x in files)
         return text
 
     def get_unitext(self):
@@ -107,7 +108,7 @@ class JournalCommon():
                 for x in [self.path]
             )
         else:
-            unitext = u""
+            unitext = ""
         return unitext
 
 
@@ -204,7 +205,7 @@ class Journal(JournalCommon):
                     accounts = result[0]
                     last_commodity_for_account = dict(
                         (acc, ledger.Amount(amt))
-                        for acc, amt in result[1].items()
+                        for acc, amt in list(result[1].items())
                     )
                     all_commodities = [
                         ledger.Amount(c)
@@ -246,7 +247,7 @@ class Journal(JournalCommon):
             for xact in self.internal_parsing_cache:
                 if hasattr(xact, "payee") and xact.payee not in titles:
                     titles[xact.payee] = xact.payee
-            return titles.keys()
+            return list(titles.keys())
 
     @debug_time(logger)
     def internal_parsing(self):
@@ -255,18 +256,17 @@ class Journal(JournalCommon):
             return self.internal_parsing_cache
 
     def generate_record(self, *args):
-        from ledgerhelpers import generate_record
-        return generate_record(*args)
+        return hln.generate_record(*args)
 
     def generate_price_records(self, prices):
         from ledgerhelpers import generate_price_records
         return generate_price_records(prices)
 
     def _add_text_to_file(self, text, f):
-        if not isinstance(text, basestring):
+        if not isinstance(text, str):
             text = "\n".join(text)
         f = open(f, "a")
-        print >> f, text,
+        print(text, end=' ', file=f)
         f.flush()
         f.close()
 
@@ -326,7 +326,7 @@ class JournalSlave(JournalCommon, Process):
                 amts[str(comm)] = True
         self.accounts = accts
         self.last_commodity_for_account = commos
-        self.all_commodities = [str(k) for k in amts.keys()]
+        self.all_commodities = [str(k) for k in list(amts.keys())]
 
     def reparse_all_if_needed(self):
         me = self
@@ -380,6 +380,6 @@ class JournalSlave(JournalCommon, Process):
                     ))
                 else:
                     assert 0, "not reached"
-            except BaseException, e:
+            except BaseException as e:
                 logger.exception("Unrecoverable error in slave.")
                 self.pipe.send(e)

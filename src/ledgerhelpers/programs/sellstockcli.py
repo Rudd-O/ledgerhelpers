@@ -1,4 +1,4 @@
-#!/usr/bin/python2
+#!/usr/bin/python3
 
 import datetime
 import fnmatch
@@ -6,7 +6,7 @@ import ledger
 import re
 import subprocess
 import sys
-import ledgerhelpers as common
+import ledgerhelpers.legacy as common
 from ledgerhelpers import gui
 
 
@@ -116,7 +116,7 @@ def matches(string, options):
 
 def main():
     journal, s = gui.load_journal_and_settings_for_gui()
-    accts, commodities = journal.accounts_and_last_commodity_for_account()
+    accts, unused_commodities = journal.accounts_and_last_commodity_for_account()
 
     saleacct = common.prompt_for_account(
         sys.stdin, sys.stdout,
@@ -166,19 +166,19 @@ def main():
     ])
     all_lots.parse_ledger_bal(lots_text)
 
-    print "=========== Read ==========="
+    print("=========== Read ===========")
     for l in all_lots:
-        print l
+        print(l)
 
     lots_produced = all_lots.subtract(target_amount)
 
-    print "========= Computed ========="
+    print("========= Computed =========")
     for l in lots_produced:
-        print l
+        print(l)
 
-    print "=========== Left ==========="
+    print("=========== Left ===========")
     for l in all_lots:
-        print l
+        print(l)
 
     lines = []
     tpl = "%s {%s}%s @ %s"
@@ -209,8 +209,8 @@ def main():
         datetime.date.today(), None, "",
         lines,
     )
-    print "========== Record =========="
-    print "\n".join(lines)
+    print("========== Record ==========")
+    print("\n".join(lines))
     save = common.yesno(
         sys.stdin, sys.stderr,
         "Hit ENTER or y to save it to the file, BACKSPACE or n to skip saving: "

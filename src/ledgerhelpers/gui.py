@@ -1,5 +1,7 @@
 import ledger
 import ledgerhelpers
+import ledgerhelpers.legacy as hl
+import ledgerhelpers.legacy_needsledger as hln
 import os
 import sys
 import threading
@@ -47,7 +49,7 @@ def add_css(css):
     _css_adjusted[css] = True
 
 
-def FatalError(message, secondary=None, outside_mainloop=False, parent=None):
+def FatalError(message, secondary=None, unused_outside_mainloop=False, parent=None):
     d = Gtk.MessageDialog(
         parent,
         Gtk.DialogFlags.DESTROY_WITH_PARENT,
@@ -74,7 +76,7 @@ class EagerCompletion(Gtk.EntryCompletion):
         self.set_text_column(0)
         self.set_inline_completion(True)
 
-    def iter_points_to_matching_entry(self, c, k, i, u=None):
+    def iter_points_to_matching_entry(self, unused_c, k, i, unused=None):
         model = self.get_model()
         acc = model.get(i, 0)[0].lower()
         if k.lower() in acc:
@@ -87,24 +89,24 @@ def load_journal_and_settings_for_gui(price_file_mandatory=False,
                                       price_file=None):
     try:
         ledger_file = ledgerhelpers.find_ledger_file(ledger_file)
-    except Exception, e:
+    except Exception as e:
         cannot_start_dialog(str(e))
         sys.exit(4)
     try:
         price_file = ledgerhelpers.find_ledger_price_file(price_file)
-    except ledgerhelpers.LedgerConfigurationError, e:
+    except ledgerhelpers.LedgerConfigurationError as e:
         if price_file_mandatory:
             cannot_start_dialog(str(e))
             sys.exit(4)
         else:
             price_file = None
-    except Exception, e:
+    except Exception as e:
         cannot_start_dialog(str(e))
         sys.exit(4)
     try:
         from ledgerhelpers.journal import Journal
         journal = Journal.from_file(ledger_file, price_file)
-    except Exception, e:
+    except Exception as e:
         cannot_start_dialog("Cannot open ledger file: %s" % e)
         sys.exit(5)
     s = ledgerhelpers.Settings.load_or_defaults(
@@ -117,7 +119,7 @@ def find_ledger_file_for_gui():
     try:
         ledger_file = ledgerhelpers.find_ledger_file()
         return ledger_file
-    except Exception, e:
+    except Exception as e:
         cannot_start_dialog(str(e))
         sys.exit(4)
 
@@ -218,7 +220,7 @@ class LedgerAmountEntry(Gtk.Grid):
         text = w.get_text()
         w.set_width_chars(max([8, len(text)]))
 
-    def entry_changed(self, w, *args):
+    def entry_changed(self, w, *unused_args):
         self._adjust_entry_size(w)
 
         if self.donotreact:
@@ -278,7 +280,7 @@ class LedgerAmountWithPriceEntry(LedgerAmountEntry):
             self.entry.set_text(concat)
         self.donotreact = False
 
-    def entry_changed(self, w, *args):
+    def entry_changed(self, w, *unused_args):
         self._adjust_entry_size(w)
 
         if self.donotreact:
@@ -352,7 +354,7 @@ ledgertransactionview {
         return self.textview.get_buffer()
 
     def generate_record(self, *args):
-        lines = ledgerhelpers.generate_record(*args)
+        lines = hln.generate_record(*args)
         self.textview.get_buffer().set_text("\n".join(lines))
 
 
@@ -372,7 +374,7 @@ class EscapeHandlingMixin(object):
     def resume_escape_handling(self):
         self.escape_handling_suspended = False
 
-    def handle_escape(self, window, event, user_data=None):
+    def handle_escape(self, unused_window, event, unused_user_data=None):
         if (
             not self.escape_handling_suspended and
             event.keyval == EVENT_ESCAPE

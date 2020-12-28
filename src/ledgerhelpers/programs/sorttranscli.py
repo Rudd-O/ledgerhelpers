@@ -1,4 +1,4 @@
-#!/usr/bin/python2
+#!/usr/bin/python3
 
 import argparse
 import codecs
@@ -7,7 +7,6 @@ import datetime
 import itertools
 import subprocess
 
-import ledgerhelpers
 from ledgerhelpers import diffing
 from ledgerhelpers import parser
 from ledgerhelpers import gui
@@ -37,7 +36,7 @@ def sort_transactions(items):
             first_transaction_seen = True
         if first_transaction_seen:
             later_dates = itertools.chain(
-                (getattr(items[i], "date", None) for i in xrange(n, len(items))),
+                (getattr(items[i], "date", None) for i in range(n, len(items))),
                 [largest_date]
             )
             for date in later_dates:
@@ -70,7 +69,7 @@ def main(argv):
             return 0
         try:
             diffing.three_way_diff(ledgerfile, leftcontents, rightcontents)
-        except subprocess.CalledProcessError, e:
+        except subprocess.CalledProcessError as e:
             if args.debug:
                 raise
             gui.FatalError(
@@ -79,7 +78,7 @@ def main(argv):
                 outside_mainloop=True
             )
             return e.returncode
-    except Exception, e:
+    except Exception as e:
         if args.debug:
             raise
         gui.FatalError(

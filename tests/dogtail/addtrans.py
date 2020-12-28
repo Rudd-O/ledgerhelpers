@@ -1,4 +1,4 @@
-#!/usr/bin/python2
+#!/usr/bin/python3
 # Dogtail test script for addtrans.
 
 import os

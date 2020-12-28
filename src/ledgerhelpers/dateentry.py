@@ -1,4 +1,4 @@
-#!/usr/bin/python2
+#!/usr/bin/python3
 
 # This code is imported straight from the Kiwi codebase, and ported to work
 # with GTK+ 3.x.
@@ -13,12 +13,13 @@
 import datetime
 
 from gi.repository import GObject
-import gi; gi.require_version("Gdk", "3.0")
-import gi; gi.require_version("Gtk", "3.0")
+import gi
+gi.require_version("Gdk", "3.0")
+gi.require_version("Gtk", "3.0")
 from gi.repository import Gdk
 from gi.repository import Gtk
 
-from ledgerhelpers import format_date, parse_date
+from ledgerhelpers.legacy import format_date, parse_date
 
 
 def prev_month(date):
@@ -164,14 +165,14 @@ class _DateEntryPopup(Gtk.Window):
         self.realize()
         self.height = self._vbox.size_request().height
 
-    def _on_calendar__day_selected_double_click(self, calendar):
+    def _on_calendar__day_selected_double_click(self, unused_calendar):
         self.emit('date-selected', self.get_date())
         self.popdown()
 
-    def _on_calendar__day_selected(self, calendar):
+    def _on_calendar__day_selected(self, unused_calendar):
         self.emit('date-selected', self.get_date())
 
-    def _on__button_press_event(self, window, event):
+    def _on__button_press_event(self, unused_window, event):
         # If we're clicking outside of the window close the popup
         hide = False
 
@@ -194,7 +195,7 @@ class _DateEntryPopup(Gtk.Window):
         if hide:
             self.popdown()
 
-    def _on__key_press_event(self, window, event):
+    def _on__key_press_event(self, unused_window, event):
         """
         Mimics Combobox behavior
 
@@ -215,17 +216,17 @@ class _DateEntryPopup(Gtk.Window):
             self.set_date(new_date)
         return processed
 
-    def _on_select__clicked(self, button):
+    def _on_select__clicked(self, unused_button):
         self.emit('date-selected', self.get_date())
 
-    def _on_close__clicked(self, button):
+    def _on_close__clicked(self, unused_button):
         self.popdown()
 
-    def _on_today__clicked(self, button):
+    def _on_today__clicked(self, unused_button):
         self.set_date(datetime.date.today())
 
     def _popup_grab_window(self):
-        activate_time = 0L
+        activate_time = 0
         win = self.get_window()
         result = Gdk.pointer_grab(win, True, (
             Gdk.EventMask.BUTTON_PRESS_MASK |
@@ -457,17 +458,17 @@ class DateEntry(Gtk.HBox):
 
     # Callbacks
 
-    def _on_entry__changed(self, entry):
+    def _on_entry__changed(self, unused_entry):
         try:
             date = self.get_date()
         except ValueError:
             date = None
         self._changed(date)
 
-    def _on_entry__activate(self, entry):
+    def _on_entry__activate(self, unused_entry):
         self.emit('activate')
 
-    def _on_entry__scroll_event(self, entry, event):
+    def _on_entry__scroll_event(self, unused_entry, event):
         if event.direction == Gdk.SCROLL_UP:
             days = 1
         elif event.direction == Gdk.SCROLL_DOWN:
@@ -496,7 +497,7 @@ class DateEntry(Gtk.HBox):
     def _on_popup__hide(self, popup):
         pass
 
-    def _on_popup__date_selected(self, popup, date):
+    def _on_popup__date_selected(self, unused_popup, date):
         self.set_date(date)
         self.entry.grab_focus()
         self.entry.set_position(len(self.entry.get_text()))
@@ -549,7 +550,7 @@ class DateEntry(Gtk.HBox):
         self.followed = other_calendar
         self.followed_last_value = other_calendar.get_date()
 
-        def copy_when(other_calendar, *args):
+        def copy_when(other_calendar, *unused_args):
             if (
                 self.get_date() == self.followed_last_value or
                 other_calendar.get_date() > self.get_date()

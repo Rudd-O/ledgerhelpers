@@ -1,16 +1,17 @@
-#!/usr/bin/python2
+#!/usr/bin/python3
 
 import datetime
 import ledger
 import os
 import sys
-import ledgerhelpers as common
+import ledgerhelpers
+import ledgerhelpers.legacy as common
 import ledgerhelpers.journal as journal
 
 
 def main():
-    s = common.Settings.load_or_defaults(os.path.expanduser("~/.ledgerhelpers.ini"))
-    j = journal.Journal.from_file(common.find_ledger_file(), None)
+    s = ledgerhelpers.Settings.load_or_defaults(os.path.expanduser("~/.ledgerhelpers.ini"))
+    j = journal.Journal.from_file(ledgerhelpers.find_ledger_file(), None)
     accts, commodities = j.accounts_and_last_commodity_for_account()
 
     when = common.prompt_for_date(
@@ -55,8 +56,8 @@ def main():
         (asset1, -1 * amount1),
         (asset2, amount2),
     ])
-    print "========== Record =========="
-    print "\n".join(lines)
+    print("========== Record ==========")
+    print("\n".join(lines))
     save = common.yesno(
         sys.stdin, sys.stderr,
         "Hit ENTER or y to save it to the file, BACKSPACE or n to skip saving: "

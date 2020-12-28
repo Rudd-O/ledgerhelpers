@@ -1,13 +1,16 @@
-#!/usr/bin/python2
+#!/usr/bin/python3
 # coding: utf-8
 
 from gi.repository import GObject
-import gi; gi.require_version("Gdk", "3.0")
-import gi; gi.require_version("Gtk", "3.0")
+import gi
+gi.require_version("Gdk", "3.0")
+gi.require_version("Gtk", "3.0")
 from gi.repository import Gdk
 from gi.repository import Gtk
 
 import ledgerhelpers as h
+import ledgerhelpers.legacy as hl
+import ledgerhelpers.legacy_needsledger as hln
 from ledgerhelpers import gui
 from ledgerhelpers.dateentry import DateEntry
 from ledgerhelpers.transactionstatebutton import TransactionStateButton
@@ -132,7 +135,7 @@ editabletransactionview button {
                 Gdk.KEY_l: self.clearing_when,
                 Gdk.KEY_p: self.payee,
             }
-            for keyval, obj in keybobjects.items():
+            for keyval, obj in list(keybobjects.items()):
                 if ev.keyval == keyval:
                     obj.grab_focus()
                     return True
@@ -153,7 +156,7 @@ editabletransactionview button {
         self.payee.get_completion().set_model(payees)
         self.payees_for_completion = payees
 
-    def handle_data_changes(self, widget, eventfocus):
+    def handle_data_changes(self, widget, unused_eventfocus):
         numlines = len(self.lines)
         for n, (account, amount) in reversed(list(enumerate(self.lines))):
             if n + 1 == numlines:
@@ -218,14 +221,14 @@ editabletransactionview button {
         if getter:
             return getter(account_name)
 
-    def child_changed(self, w, ignored=None):
+    def child_changed(self, w, unused=None):
         self.handle_data_changes(w, None)
         self.emit("changed")
 
-    def payee_changed(self, w, ignored=None):
+    def payee_changed(self, unused_w, unused=None):
         self.emit("payee-changed")
 
-    def payee_focused_out(self, w, ignored=None):
+    def payee_focused_out(self, unused_w, unused=None):
         self.emit("payee-focus-out-event")
 
     def get_payee_text(self):
@@ -370,9 +373,9 @@ editabletransactionview button {
                 "Enter at least two transaction entries"
             )
         try:
-            h.generate_record(title, date, auxdate, statechar, lines,
+            hln.generate_record(title, date, auxdate, statechar, lines,
                               validate=True)
-        except h.LedgerParseError as e:
+        except hln.LedgerParseError as e:
             raise h.TransactionInputValidationError(str(e))
 
 
