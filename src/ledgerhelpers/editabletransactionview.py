@@ -9,7 +9,6 @@ from gi.repository import Gdk
 from gi.repository import Gtk
 
 import ledgerhelpers as h
-import ledgerhelpers.legacy as hl
 import ledgerhelpers.legacy_needsledger as hln
 from ledgerhelpers import gui
 from ledgerhelpers.dateentry import DateEntry
