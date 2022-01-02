@@ -155,6 +155,7 @@ def parse_date(putative_date, return_format=False):
             d = datetime.datetime.strptime(putative_date, f).date()
             break
         except ValueError as e:
+            last_exception = e
             continue
     try:
         if return_format:
@@ -162,7 +163,7 @@ def parse_date(putative_date, return_format=False):
         else:
             return d
     except UnboundLocalError:
-        raise ValueError("cannot parse date from format %s: %s" % (f, e))
+        raise ValueError("cannot parse date from format %s: %s" % (f, last_exception))
 
 
 def format_date(date_obj, sample_date):
