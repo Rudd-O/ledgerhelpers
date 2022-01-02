@@ -66,7 +66,7 @@ def main(argv):
         rightcontents = "".join(i.contents for i in sort_transactions(items))
         if args.assume_yes:
             with open(ledgerfile, "w") as out_file:
-                out_file.write(rightcontents.encode("utf-8"))
+                out_file.write(rightcontents)
             return 0
         try:
             diffing.three_way_diff(ledgerfile, leftcontents, rightcontents)
