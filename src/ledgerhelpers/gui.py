@@ -329,7 +329,7 @@ class EditableTabFocusFriendlyTextView(Gtk.TextView):
 
 class LedgerTransactionView(Gtk.Box):
 
-    css = """
+    css = b"""
 ledgertransactionview {
   border: 1px @borders inset;
 }
