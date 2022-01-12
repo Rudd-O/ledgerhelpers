@@ -23,7 +23,7 @@ class EditableTransactionView(Gtk.Grid):
         'payee-changed': (GObject.SIGNAL_RUN_LAST, None, ()),
     }
 
-    css = """
+    css = b"""
 editabletransactionview {
   border: 1px @borders inset;
   background: #fff;

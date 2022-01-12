@@ -266,7 +266,7 @@ class Journal(JournalCommon):
         if not isinstance(text, str):
             text = "\n".join(text)
         f = open(f, "a")
-        print(text, end=' ', file=f)
+        print(text, file=f)
         f.flush()
         f.close()
 
