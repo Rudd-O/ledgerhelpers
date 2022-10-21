@@ -49,7 +49,7 @@ def add_css(css):
     _css_adjusted[css] = True
 
 
-def FatalError(message, secondary=None, unused_outside_mainloop=False, parent=None):
+def FatalError(message, secondary=None, parent=None):
     d = Gtk.MessageDialog(
         parent,
         Gtk.DialogFlags.DESTROY_WITH_PARENT,
@@ -63,7 +63,7 @@ def FatalError(message, secondary=None, unused_outside_mainloop=False, parent=No
 
 
 def cannot_start_dialog(msg):
-    return FatalError("Cannot start program", msg, outside_mainloop=True)
+    return FatalError("Cannot start program", msg)
 
 
 class EagerCompletion(Gtk.EntryCompletion):
