@@ -112,6 +112,11 @@ class JournalCommon():
         return unitext
 
 
+class FakeThread:
+    def join(self):
+        pass
+
+
 class Journal(JournalCommon):
 
     logger = logging.getLogger("journal.master")
