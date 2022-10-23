@@ -189,6 +189,8 @@ class Journal(JournalCommon):
             self.internal_parsing_thread.setName("Internal reparser")
             self.internal_parsing_thread.start()
         else:
+            if self.internal_parsing_thread is None:
+                self.internal_parsing_thread = FakeThread()
             self.internal_parsing_cache_lock.release()
 
         return self.internal_parsing_thread
