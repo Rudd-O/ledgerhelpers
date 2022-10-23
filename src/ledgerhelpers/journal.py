@@ -125,7 +125,7 @@ class Journal(JournalCommon):
     slave = None
     slave_lock = None
     cache = None
-    internal_parsing_cache = None
+    internal_parsing_cache = []
     internal_parsing_cache_lock = None
     internal_parsing_thread = None
 
