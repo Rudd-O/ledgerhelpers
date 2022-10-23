@@ -351,7 +351,8 @@ class JournalSlave(JournalCommon, Process):
             self.ledger_parsing_thread = Rpl()
             self.ledger_parsing_thread.setName("Ledger reparser")
             self.ledger_parsing_thread.start()
-
+        if self.ledger_parsing_thread is None:
+            self.ledger_parsing_thread = FakeThread()
         return (
             changed, self.ledger_parsing_thread
         )
