@@ -126,6 +126,7 @@ class Journal(JournalCommon):
     def __init__(self):
         """Do not instantiate directly.  Use class methods."""
         self.cache = {}
+        self.internal_parsing_cache = []
         self.internal_parsing_cache_lock = threading.Lock()
         self.slave_lock = threading.Lock()
 
