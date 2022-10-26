@@ -21,12 +21,12 @@ CMD_GET_A_LCFA_C = "get_accounts_last_commodity_for_account_and_commodities"
 
 
 def transactions_with_payee(payee,
-                            internal_parsing,
+                            internal_parsing_result,
                             case_sensitive=True):
     """Given a payee string, and an internal_parsing() result from the
     journal, return the transactions that substring match the payee."""
     transes = []
-    for xact in internal_parsing:
+    for xact in internal_parsing_result:
         if not hasattr(xact, "payee"):
             continue
         left = xact.payee
@@ -122,7 +122,6 @@ class Journal(JournalCommon):
     cache = None
     internal_parsing_cache = None
     internal_parsing_cache_lock = None
-    internal_parsing_thread = None
 
     def __init__(self):
         """Do not instantiate directly.  Use class methods."""
@@ -180,13 +179,15 @@ class Journal(JournalCommon):
                     finally:
                         me.internal_parsing_cache_lock.release()
 
-            self.internal_parsing_thread = Rpi()
-            self.internal_parsing_thread.setName("Internal reparser")
-            self.internal_parsing_thread.start()
+            internal_parsing_thread = Rpi()
+            internal_parsing_thread.setName("Internal reparser")
+            internal_parsing_thread.start()
+            return internal_parsing_thread
         else:
-            self.internal_parsing_cache_lock.release()
-
-        return self.internal_parsing_thread
+            # Dummy thread.  Just serves to unlock the parsing cache lock.
+            nothread = threading.Thread(target=self.internal_parsing_cache_lock.release)
+            nothread.start()
+            return nothread
 
     def _cache_accounts_last_commodity_for_account_and_commodities(self):
         with self.slave_lock:
@@ -241,13 +242,11 @@ class Journal(JournalCommon):
     @debug_time(logger)
     def all_payees(self):
         """Returns a list of strings with payees (transaction titles)."""
-        self._cache_internal_parsing().join()
         titles = collections.OrderedDict()
-        with self.internal_parsing_cache_lock:
-            for xact in self.internal_parsing_cache:
-                if hasattr(xact, "payee") and xact.payee not in titles:
-                    titles[xact.payee] = xact.payee
-            return list(titles.keys())
+        for xact in self.internal_parsing():
+            if hasattr(xact, "payee") and xact.payee not in titles:
+                titles[xact.payee] = xact.payee
+        return list(titles.keys())
 
     @debug_time(logger)
     def internal_parsing(self):
