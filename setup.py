@@ -52,6 +52,7 @@ setup(
 	version=version,
 	description='A collection of helper programs and a helper library for Ledger (ledger-cli)',
 	long_description = readme,
+	long_description_content_type = "text/markdown",
 	author='Manuel Amador (Rudd-O)',
 	author_email='rudd-o@rudd-o.com',
 	license="GPLv2+",
