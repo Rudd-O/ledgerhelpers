@@ -40,6 +40,8 @@ def add_css(css):
     global _css_adjusted
     if css not in _css_adjusted:
         style_provider = Gtk.CssProvider()
+        if isinstance(css, str):
+            css = css.encode("utf-8")
         style_provider.load_from_data(css)
         Gtk.StyleContext.add_provider_for_screen(
             Gdk.Screen.get_default(),
