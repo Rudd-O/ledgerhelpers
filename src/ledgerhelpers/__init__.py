@@ -18,13 +18,14 @@ import threading
 import time
 import tty
 
-__version__ = "0.3.1"
+__version__ = "0.3.4"
+
+
+log = logging.getLogger(__name__)
 
 
 def debug(string, *args):
-    if args:
-        string = string % args
-    print(string, file=sys.stderr)
+    log.debug(string, *args)
 
 
 _debug_time = False
@@ -161,7 +162,10 @@ class Settings(dict):
     def load_or_defaults(cls, filename):
         s = cls(filename)
         if os.path.isfile(s.filename):
-            s.data = pickle.load(open(s.filename, "rb"))
+            try:
+                s.data = pickle.load(open(s.filename, "rb"))
+            except Exception as e:
+                log.error("Cannot load %s so loading defaults: %s", s.filename, e)
         try:
             unused_suggester = s["suggester"]
         except KeyError:

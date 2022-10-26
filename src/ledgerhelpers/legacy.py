@@ -3,7 +3,6 @@ import fcntl
 import struct
 import termios
 import tty
-from ansible.plugins.lookup import lines
 
 
 CURSOR_UP = "\033[F"
@@ -155,14 +154,15 @@ def parse_date(putative_date, return_format=False):
             d = datetime.datetime.strptime(putative_date, f).date()
             break
         except ValueError as e:
+            last_exception = e
             continue
     try:
         if return_format:
             return d, f
         else:
             return d
-    except UnboundLocalError as e:
-        raise ValueError("cannot parse date from format %s: %s" % (f, e))
+    except UnboundLocalError:
+        raise ValueError("cannot parse date from format %s: %s" % (f, last_exception))
 
 
 def format_date(date_obj, sample_date):

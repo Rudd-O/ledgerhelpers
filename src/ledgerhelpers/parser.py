@@ -469,7 +469,7 @@ class LedgerTransactionLexer(GenericLexer):
 
     def state_parsing_transaction_posting_account(self):
         chars = []
-        if self.peek() in CHAR_COMMENT:
+        if self.more() and self.peek() in CHAR_COMMENT:
             return self.state_parsing_transaction_comment
         while self.more():
             if (
