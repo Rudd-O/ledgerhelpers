@@ -3,7 +3,6 @@ import fcntl
 import struct
 import termios
 import tty
-from ansible.plugins.lookup import lines
 
 
 CURSOR_UP = "\033[F"
