@@ -344,6 +344,11 @@ class JournalSlave(JournalCommon, Process):
             self.ledger_parsing_thread.setName("Ledger reparser")
             self.ledger_parsing_thread.start()
 
+        else:
+            self.ledger_parsing_thread = threading.Thread(target=len, args=([],))
+            self.ledger_parsing_thread.setName("Dummy ledger reparser")
+            self.ledger_parsing_thread.start()
+
         return (
             changed, self.ledger_parsing_thread
         )
