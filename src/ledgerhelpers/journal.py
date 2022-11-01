@@ -203,15 +203,15 @@ class Journal(JournalCommon):
                 if result == UNCHANGED:
                     assert "accounts" in self.cache
                 else:
-                    accounts = result[0]
+                    accounts = result[0] if result[0] is not None else []
                     last_commodity_for_account = dict(
                         (acc, ledger.Amount(amt))
                         for acc, amt in list(result[1].items())
-                    )
+                    ) if result[1] is not None else {}
                     all_commodities = [
                         ledger.Amount(c)
                         for c in result[2]
-                    ]
+                    ] if result[2] is not None else []
                     self.cache["accounts"] = accounts
                     self.cache["last_commodity_for_account"] = (
                         last_commodity_for_account
