@@ -92,24 +92,24 @@ class JournalCommon():
         else:
             return False
 
-    def get_text(self):
+    def _get_text(self, prepend_price_path=False):
         files = []
-        if self.price_path:
+        if self.price_path and prepend_price_path:
             files.append(self.price_path)
         if self.path:
             files.append(self.path)
-        text = "\n".join(open(x).read() for x in files)
+        t = []
+        for f in files:
+            with open(x, "r") as fo:
+                t.append(fo.read())
+        text = "\n".join(t)
         return text
 
-    def get_unitext(self):
-        if self.path:
-            unitext = "\n".join(
-                codecs.open(x, "rb", "utf-8").read()
-                for x in [self.path]
-            )
-        else:
-            unitext = ""
-        return unitext
+    def get_journal_text_with_prices(self):
+        return self._get_text(True)
+
+    def get_journal_text(self):
+        return self._get_text(False)
 
 
 class Journal(JournalCommon):
@@ -174,7 +174,7 @@ class Journal(JournalCommon):
                 def __run__(self):
                     try:
                         me.logger.debug("Reparsing internal.")
-                        res = parser.lex_ledger_file_contents(me.get_unitext())
+                        res = parser.lex_ledger_file_contents(me.get_journal_text())
                         me.internal_parsing_cache = res
                     finally:
                         me.internal_parsing_cache_lock.release()
@@ -305,7 +305,7 @@ class JournalSlave(JournalCommon, Process):
     def reparse_ledger(self):
         self.logger.debug("Reparsing ledger.")
         session = ledger.Session()
-        journal = session.read_journal_from_string(self.get_text())
+        journal = session.read_journal_from_string(self.get_journal_text_with_prices())
         self.session = session
         self.journal = journal
 
