@@ -24,17 +24,16 @@ def transactions_with_payee(payee,
                             internal_parsing_result,
                             case_sensitive=True):
     """Given a payee string, and an internal_parsing() result from the
-    journal, return the transactions that substring match the payee."""
+    journal, return the transactions with matching payee,
+    perhaps ignoring case."""
     transes = []
+    if not case_sensitive:
+        payee = payee.lower()
     for xact in internal_parsing_result:
         if not hasattr(xact, "payee"):
             continue
-        left = xact.payee
-        right = payee
-        if not case_sensitive:
-            left = left.lower()
-            right = right.lower()
-        if left == right:
+        xact_payee = xact.payee if case_sensitive else xact.payee.lower()
+        if xact_payee == payee:
             transes.append(xact)
     return transes
 
