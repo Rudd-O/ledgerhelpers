@@ -152,15 +152,6 @@ class Journal(JournalCommon):
         j._cache_internal_parsing()
         return j
 
-    @classmethod
-    def from_file_unloaded(klass, journal_file, price_file):
-        j = klass()
-        j.path = journal_file
-        j.price_path = price_file
-        j._start_slave()
-        j._cache_internal_parsing()
-        return j
-
     def _cache_internal_parsing(self):
         self.internal_parsing_cache_lock.acquire()
 
