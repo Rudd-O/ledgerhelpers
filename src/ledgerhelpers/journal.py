@@ -38,6 +38,8 @@ def transactions_with_payee(payee,
 
 
 class Joinable(threading.Thread):
+    """A subclass of threading.Thread that catches exception in run(), if any,
+    and re-throws it in join()."""
     exception = None
 
     def __init__(self):
