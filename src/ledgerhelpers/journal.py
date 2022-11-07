@@ -99,7 +99,7 @@ class JournalCommon():
             files.append(self.path)
         t = []
         for f in files:
-            with open(x, "r") as fo:
+            with open(f, "r") as fo:
                 t.append(fo.read())
         text = "\n".join(t)
         return text
