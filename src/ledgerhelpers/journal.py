@@ -1,6 +1,5 @@
 #!/usr/bin/python3
 
-import codecs
 import collections
 import errno
 import ledger
