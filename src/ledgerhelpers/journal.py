@@ -102,6 +102,7 @@ class JournalCommon():
             with open(f, "r") as fo:
                 t.append(fo.read())
         text = "\n".join(t)
+        self.logger.debug("Read %d characters of journal%s.", len(text), " and price file" if len(files) > 1 else "")
         return text
 
     def get_journal_text_with_prices(self):
