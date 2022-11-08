@@ -43,8 +43,7 @@ class Joinable(threading.Thread):
     exception = None
 
     def __init__(self):
-        threading.Thread.__init__(self)
-        self.setDaemon(True)
+        threading.Thread.__init__(self, daemon=True)
 
     def join(self):
         threading.Thread.join(self)
@@ -171,7 +170,7 @@ class Journal(JournalCommon):
                         me.internal_parsing_cache_lock.release()
 
             internal_parsing_thread = Rpi()
-            internal_parsing_thread.setName("Internal reparser")
+            internal_parsing_thread.name = "Internal reparser"
             internal_parsing_thread.start()
             return internal_parsing_thread
         else:
@@ -332,12 +331,12 @@ class JournalSlave(JournalCommon, Process):
                     me.harvest_accounts_and_last_commodities()
 
             self.ledger_parsing_thread = Rpl()
-            self.ledger_parsing_thread.setName("Ledger reparser")
+            self.ledger_parsing_thread.name = "Ledger reparser"
             self.ledger_parsing_thread.start()
 
         else:
             self.ledger_parsing_thread = threading.Thread(target=len, args=([],))
-            self.ledger_parsing_thread.setName("Dummy ledger reparser")
+            self.ledger_parsing_thread.name = "Dummy ledger reparser"
             self.ledger_parsing_thread.start()
 
         return (
