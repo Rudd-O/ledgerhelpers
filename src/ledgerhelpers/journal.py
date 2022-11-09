@@ -276,8 +276,6 @@ class JournalSlave(JournalCommon, Process):
     all_commodities = None
     logger = logging.getLogger("journal.slave")
 
-    ledger_parsing_thread = None
-
     def __init__(self, pipe, path, price_path):
         Process.__init__(self)
         self.daemon = True
@@ -331,17 +329,17 @@ class JournalSlave(JournalCommon, Process):
                     me.reparse_ledger()
                     me.harvest_accounts_and_last_commodities()
 
-            self.ledger_parsing_thread = Rpl()
-            self.ledger_parsing_thread.name = "Ledger reparser"
-            self.ledger_parsing_thread.start()
+            ledger_parsing_thread = Rpl()
+            ledger_parsing_thread.name = "Ledger reparser"
 
         else:
-            self.ledger_parsing_thread = threading.Thread(target=len, args=([],))
-            self.ledger_parsing_thread.name = "Dummy ledger reparser"
-            self.ledger_parsing_thread.start()
+            ledger_parsing_thread = threading.Thread(target=len, args=([],))
+            ledger_parsing_thread.name = "Dummy ledger reparser"
+
+        ledger_parsing_thread.start()
 
         return (
-            changed, self.ledger_parsing_thread
+            changed, ledger_parsing_thread
         )
 
     def run(self):
