@@ -344,9 +344,12 @@ class JournalSlave(JournalCommon, Process):
 
     def run(self):
         logger = logging.getLogger("journal.slave.loop")
-        self.reparse_all_if_needed()
+        _, initial_parsing_thread = self.reparse_all_if_needed()
         while True:
             cmd_args = self.pipe.recv()
+            if initial_parsing_thread:
+                initial_parsing_thread.join()
+                initial_parsing_thread = None
             cmd = cmd_args[0]
             start = time.time()
             logger.debug("* Servicing: %-55s  started", cmd)
