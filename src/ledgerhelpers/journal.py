@@ -1,6 +1,5 @@
 #!/usr/bin/python3
 
-import codecs
 import collections
 import errno
 import ledger
@@ -24,27 +23,27 @@ def transactions_with_payee(payee,
                             internal_parsing_result,
                             case_sensitive=True):
     """Given a payee string, and an internal_parsing() result from the
-    journal, return the transactions that substring match the payee."""
+    journal, return the transactions with matching payee,
+    perhaps ignoring case."""
     transes = []
+    if not case_sensitive:
+        payee = payee.lower()
     for xact in internal_parsing_result:
         if not hasattr(xact, "payee"):
             continue
-        left = xact.payee
-        right = payee
-        if not case_sensitive:
-            left = left.lower()
-            right = right.lower()
-        if left == right:
+        xact_payee = xact.payee if case_sensitive else xact.payee.lower()
+        if xact_payee == payee:
             transes.append(xact)
     return transes
 
 
 class Joinable(threading.Thread):
+    """A subclass of threading.Thread that catches exception in run(), if any,
+    and re-throws it in join()."""
     exception = None
 
     def __init__(self):
-        threading.Thread.__init__(self)
-        self.setDaemon(True)
+        threading.Thread.__init__(self, daemon=True)
 
     def join(self):
         threading.Thread.join(self)
@@ -100,9 +99,10 @@ class JournalCommon():
             files.append(self.path)
         t = []
         for f in files:
-            with open(x, "r") as fo:
+            with open(f, "r") as fo:
                 t.append(fo.read())
         text = "\n".join(t)
+        self.logger.debug("Read %d characters of journal%s.", len(text), " and price file" if len(files) > 1 else "")
         return text
 
     def get_journal_text_with_prices(self):
@@ -154,15 +154,6 @@ class Journal(JournalCommon):
         j._cache_internal_parsing()
         return j
 
-    @classmethod
-    def from_file_unloaded(klass, journal_file, price_file):
-        j = klass()
-        j.path = journal_file
-        j.price_path = price_file
-        j._start_slave()
-        j._cache_internal_parsing()
-        return j
-
     def _cache_internal_parsing(self):
         self.internal_parsing_cache_lock.acquire()
 
@@ -181,7 +172,7 @@ class Journal(JournalCommon):
                         me.internal_parsing_cache_lock.release()
 
             internal_parsing_thread = Rpi()
-            internal_parsing_thread.setName("Internal reparser")
+            internal_parsing_thread.name = "Internal reparser"
             internal_parsing_thread.start()
             return internal_parsing_thread
         else:
@@ -342,12 +333,12 @@ class JournalSlave(JournalCommon, Process):
                     me.harvest_accounts_and_last_commodities()
 
             self.ledger_parsing_thread = Rpl()
-            self.ledger_parsing_thread.setName("Ledger reparser")
+            self.ledger_parsing_thread.name = "Ledger reparser"
             self.ledger_parsing_thread.start()
 
         else:
             self.ledger_parsing_thread = threading.Thread(target=len, args=([],))
-            self.ledger_parsing_thread.setName("Dummy ledger reparser")
+            self.ledger_parsing_thread.name = "Dummy ledger reparser"
             self.ledger_parsing_thread.start()
 
         return (

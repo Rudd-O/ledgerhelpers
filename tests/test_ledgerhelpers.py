@@ -26,7 +26,8 @@ class TestJournal(T):
 
     def test_reload_works(self):
         with tempfile.NamedTemporaryFile(mode="w") as f:
-            data = open(base.datapath("simple_transaction.dat")).read()
+            with open(base.datapath("simple_transaction.dat")) as transaction_data:
+                data = transaction_data.read()
             f.write(data)
             f.flush()
             j = journal.Journal.from_file(f.name, None)
