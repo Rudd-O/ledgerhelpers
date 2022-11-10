@@ -146,7 +146,7 @@ class AddTransApp(AddTransWindow, gui.EscapeHandlingMixin):
             self.status.set_text("")
 
     def journal_load_failed(self, e):
-        traceback.print_exc()
+        traceback.print_exception(e)
         gui.FatalError(
             "Add transaction loading failed",
             "An unexpected error took place:\n%s" % e,
