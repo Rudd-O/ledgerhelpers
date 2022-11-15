@@ -51,6 +51,7 @@ def print_line_ellipsized(fileobj, maxlen, text):
     if len(text) > maxlen:
         text = text[:maxlen]
     fileobj.write(text)
+    fileobj.flush()
     print()
 
 
