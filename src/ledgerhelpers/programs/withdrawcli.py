@@ -6,6 +6,7 @@ import os
 import sys
 import ledgerhelpers
 import ledgerhelpers.legacy as common
+import ledgerhelpers.legacy_needsledger as common2
 import ledgerhelpers.journal as journal
 
 
@@ -42,12 +43,12 @@ def main():
     s["last_deposit_account"] = asset2
     asset2_currency = commodities.get(asset2, ledger.Amount("$ 1"))
 
-    amount1 = common.prompt_for_amount(
+    amount1 = common2.prompt_for_amount(
         sys.stdin, sys.stdout,
         "How much?", asset1_currency
     )
 
-    amount2 = common.prompt_for_amount(
+    amount2 = common2.prompt_for_amount(
         sys.stdin, sys.stdout,
         "What was deposited?", asset2_currency
     )
