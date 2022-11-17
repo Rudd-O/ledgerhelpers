@@ -18,7 +18,7 @@ import threading
 import time
 import tty
 
-__version__ = "0.3.7"
+__version__ = "0.3.8"
 
 
 log = logging.getLogger(__name__)
