@@ -1,0 +1,80 @@
+.\"                                      Hey, EMACS: -*- nroff -*-
+.\" (C) Copyright 2022 Marcin Owsiany <porridge@debian.org>,
+.\"
+.\" First parameter, NAME, should be all caps
+.\" Second parameter, SECTION, should be 1-8, maybe w/ subsection
+.\" other parameters are allowed: see man(7), man(1)
+.TH addtrans 1 "November 11 2022"
+.\" Please adjust this date whenever revising the manpage.
+.\"
+.\" Some roff macros, for reference:
+.\" .nh        disable hyphenation
+.\" .hy        enable hyphenation
+.\" .ad l      left justify
+.\" .ad b      justify to both left and right margins
+.\" .nf        disable filling
+.\" .fi        enable filling
+.\" .br        insert line break
+.\" .sp <n>    insert n+1 empty lines
+.\" for manpage-specific macros, see man(7)
+.SH NAME
+addtrans \- interactively add transactions to a ledger file
+.SH SYNOPSIS
+.B addtrans
+.RI [ options ]
+.SH DESCRIPTION
+.B addtrans
+is a graphical application for quickly adding new transactions to a ledger file.
+.PP
+A tutorial for using this program, with screenshots, is available at
+.BR /usr/share/doc/ledgerhelpers/doc/addtrans.html
+.PP
+The program must be supplied with locations of the ledger and price database
+files to work with.
+The location of each file is determined independently, using the following
+mechanisms, in this order.
+The first mechanism which yields a result, wins.
+.SH OPTIONS
+.TP
+.BR \-h ,
+.BR \-\-help
+Show help message and exit.
+.TP
+.B \-\-file FILE
+Specify path to ledger file to work with.
+.TP
+.B \-\-price\-db PRICEDB
+Specify path to ledger price database to work with.
+.TP
+.B \-\-debug
+Turn on debugging output, may be useful for developers.
+.SH ENVIRONMENT
+The following environment variables are recognized by this program:
+.TP
+.BR LEDGER_FILE
+Path to ledger file to work with.
+.TP
+.BR LEDGER_PRICE_DB
+Path to ledger price database to work with.
+.SH FILES
+The config file for
+.BR ledger (1),
+namely file
+.BR .ledgerrc
+in user's home directory is scanned looking for the following options.
+.TP
+.B \-\-file FILE
+Path to ledger file to work with.
+.TP
+.B \-\-price\-db PRICEDB
+Path to ledger price database to work with.
+
+.SH SEE ALSO
+.BR ledger (1),
+.BR cleartrans\-cli (1),
+.BR sellstock\-cli (1),
+.BR sorttrans\-cli (1),
+.BR withdraw\-cli (1).
+.br
+A tutorial for using this program, with screenshots, is available at
+.BR /usr/share/doc/ledgerhelpers/doc/addtrans.html

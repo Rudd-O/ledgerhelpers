@@ -1,0 +1,65 @@
+.\"                                      Hey, EMACS: -*- nroff -*-
+.\" (C) Copyright 2022 Marcin Owsiany <porridge@debian.org>,
+.\"
+.\" First parameter, NAME, should be all caps
+.\" Second parameter, SECTION, should be 1-8, maybe w/ subsection
+.\" other parameters are allowed: see man(7), man(1)
+.TH sellstock\-cli 1 "November 14 2022"
+.\" Please adjust this date whenever revising the manpage.
+.\"
+.\" Some roff macros, for reference:
+.\" .nh        disable hyphenation
+.\" .hy        enable hyphenation
+.\" .ad l      left justify
+.\" .ad b      justify to both left and right margins
+.\" .nf        disable filling
+.\" .fi        enable filling
+.\" .br        insert line break
+.\" .sp <n>    insert n+1 empty lines
+.\" for manpage-specific macros, see man(7)
+.SH NAME
+sellstock\-cli \- record FIFO stock or commodity sales
+.SH SYNOPSIS
+.B sellstock\-cli
+.SH DESCRIPTION
+.B sellstock\-cli
+is a text program for quickly recording commodity sales in a ledger file.
+.PP
+The program first prompts for the account in which the commodity was stored,
+the account for commissions, and the account to credit for gains and losses,
+as well as the amount and name of sold commodity, its sale price, and the
+commission.
+.PP
+Then the program invokes
+.B ledger
+to list the dates and prices at which each commodity was purchased, lists them,
+subtracts the requested amount and shows the result.
+.PP
+Finally, the resulting transaction is shown, asking for a confirmation to save
+it to the journal.
+.PP
+The program must be supplied with location of the ledger file to work with.
+The location of the file is determined using the following mechanisms, in this
+order.
+The first mechanism which yields a result, wins.
+.SH ENVIRONMENT
+The following environment variable is recognized by this program:
+.TP
+.BR LEDGER_FILE
+Path to ledger file to work with.
+.SH FILES
+The config file for
+.BR ledger (1),
+namely file
+.B .ledgerrc
+in user's home directory is scanned looking for the following option.
+.TP
+.B \-\-file FILE
+Path to ledger file to work with.
+
+.SH SEE ALSO
+.BR ledger (1),
+.BR addtrans (1),
+.BR cleartrans\-cli (1),
+.BR sorttrans\-cli (1),
+.BR withdraw\-cli (1).

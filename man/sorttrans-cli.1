@@ -1,0 +1,81 @@
+.\"                                      Hey, EMACS: -*- nroff -*-
+.\" (C) Copyright 2022 Marcin Owsiany <porridge@debian.org>,
+.\"
+.\" First parameter, NAME, should be all caps
+.\" Second parameter, SECTION, should be 1-8, maybe w/ subsection
+.\" other parameters are allowed: see man(7), man(1)
+.TH sorttrans\-cli 1 "November 14 2022"
+.\" Please adjust this date whenever revising the manpage.
+.\"
+.\" Some roff macros, for reference:
+.\" .nh        disable hyphenation
+.\" .hy        enable hyphenation
+.\" .ad l      left justify
+.\" .ad b      justify to both left and right margins
+.\" .nf        disable filling
+.\" .fi        enable filling
+.\" .br        insert line break
+.\" .sp <n>    insert n+1 empty lines
+.\" for manpage-specific macros, see man(7)
+.SH NAME
+sorttrans\-cli \- sorts a ledger file in chronological order
+.SH SYNOPSIS
+.B sorttrans\-cli
+.RI [ options ]
+.SH OPTIONS
+.TP
+.BR -y
+Write back the file immediately, without showing the differences.
+.TP
+.BR \-h ,
+.BR \-\-help
+Show help message and exit.
+.TP
+.B \-\-file FILE
+Specify path to ledger file to work with.
+.TP
+.B \-\-price\-db PRICEDB
+Specify path to ledger price database to work with.
+.TP
+.B \-\-debug
+Turn on debugging output, may be useful for developers.
+.
+.SH DESCRIPTION
+.B sorttrans\-cli
+is a text program for sorting a ledger in chronological order.
+.PP
+The program loads the ledger file and sorts the transactions in memory.
+Then, depending on the command-line options, it either writes the sorted file
+back, or invokes
+.B meld
+with the original and sorted version shown, for interactive editing.
+.PP
+The program must be supplied with location of the ledger file to work with.
+If not supplied using the command-line option
+.BR \-\-file ,
+the location of the file is determined using the following mechanisms, in this
+order.
+The first mechanism which yields a result, wins.
+.SH ENVIRONMENT
+The following environment variable is recognized by this program:
+.TP
+.BR LEDGER_FILE
+Path to ledger file to work with.
+.SH FILES
+The config file for
+.BR ledger (1),
+namely file
+.B .ledgerrc
+in user's home directory is scanned looking for the following option.
+.TP
+.B \-\-file FILE
+Path to ledger file to work with.
+
+.SH SEE ALSO
+.BR ledger (1),
+.BR meld (1),
+.BR addtrans (1),
+.BR cleartrans\-cli (1),
+.BR sellstock\-cli (1),
+.BR withdraw\-cli (1).
+

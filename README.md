@@ -38,6 +38,8 @@ Usage and manuals
 
 * [How to add transactions with `addtrans`](doc/addtrans.md)
 
+See also individual [manual pages](man/) in NROFF format.
+
 How to download and install
 ---------------------------
 
