@@ -1,0 +1,55 @@
+.\"                                      Hey, EMACS: -*- nroff -*-
+.\" (C) Copyright 2022 Marcin Owsiany <porridge@debian.org>,
+.\"
+.\" First parameter, NAME, should be all caps
+.\" Second parameter, SECTION, should be 1-8, maybe w/ subsection
+.\" other parameters are allowed: see man(7), man(1)
+.TH withdraw\-cli 1 "November 11 2022"
+.\" Please adjust this date whenever revising the manpage.
+.\"
+.\" Some roff macros, for reference:
+.\" .nh        disable hyphenation
+.\" .hy        enable hyphenation
+.\" .ad l      left justify
+.\" .ad b      justify to both left and right margins
+.\" .nf        disable filling
+.\" .fi        enable filling
+.\" .br        insert line break
+.\" .sp <n>    insert n+1 empty lines
+.\" for manpage-specific macros, see man(7)
+.SH NAME
+withdraw\-cli \- record multi-currency ATM withdrawals in a ledger file
+.SH SYNOPSIS
+.B withdraw
+.SH DESCRIPTION
+.B withdraw\-cli
+is a text program for quickly entering cash withdrawal transactions in a
+ledger file.
+.PP
+This program interactively asks for accounts and withdrawn and deposited
+amounts, and adds a transaction to the ledger file after confirmation.
+.PP
+The program must be supplied with location of the ledger file to work with.
+The location of the file is determined using the following mechanisms, in this
+order.
+The first mechanism which yields a result, wins.
+.SH ENVIRONMENT
+The following environment variable is recognized by this program:
+.TP
+.BR LEDGER_FILE
+Path to ledger file to work with.
+.SH FILES
+The config file for
+.BR ledger (1),
+namely file
+.BR .ledgerrc
+in user's home directory is scanned looking for the following option.
+.TP
+.B \-\-file FILE
+Path to ledger file to work with.
+.SH SEE ALSO
+.BR ledger (1),
+.BR addtrans (1),
+.BR cleartrans\-cli (1),
+.BR sellstock\-cli (1),
+.BR sorttrans\-cli (1).

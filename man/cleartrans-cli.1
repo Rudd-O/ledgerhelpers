@@ -1,0 +1,59 @@
+.\"                                      Hey, EMACS: -*- nroff -*-
+.\" (C) Copyright 2022 Marcin Owsiany <porridge@debian.org>,
+.\"
+.\" First parameter, NAME, should be all caps
+.\" Second parameter, SECTION, should be 1-8, maybe w/ subsection
+.\" other parameters are allowed: see man(7), man(1)
+.TH cleartrans\-cli 1 "November 11 2022"
+.\" Please adjust this date whenever revising the manpage.
+.\"
+.\" Some roff macros, for reference:
+.\" .nh        disable hyphenation
+.\" .hy        enable hyphenation
+.\" .ad l      left justify
+.\" .ad b      justify to both left and right margins
+.\" .nf        disable filling
+.\" .fi        enable filling
+.\" .br        insert line break
+.\" .sp <n>    insert n+1 empty lines
+.\" for manpage-specific macros, see man(7)
+.SH NAME
+cleartrans\-cli \- interactively clear transactions in a ledger file
+.SH SYNOPSIS
+.B cleartrans
+.SH DESCRIPTION
+.B cleartrans\-cli
+is a text program for quickly clearing transactions in a ledger file.
+.PP
+This program looks for all uncleared transactions in the ledger file,
+whose effective date is not in the future.
+For each such transaction, it asks whether the transaction should be cleared,
+and prompts for an effective date for the transaction.
+.PP
+The resulting ledger is written to a new file, and atomically renamed to the original
+filename. This prevents accidental loss of data.
+.PP
+The program must be supplied with location of the ledger file to work with.
+The location of the file is determined using the following mechanisms, in this
+order.
+The first mechanism which yields a result, wins.
+.SH ENVIRONMENT
+The following environment variable is recognized by this program:
+.TP
+.BR LEDGER_FILE
+Path to ledger file to work with.
+.SH FILES
+The config file for
+.BR ledger (1),
+namely file
+.BR .ledgerrc
+in user's home directory is scanned looking for the following option.
+.TP
+.B \-\-file FILE
+Path to ledger file to work with.
+.SH SEE ALSO
+.BR ledger (1),
+.BR addtrans (1),
+.BR sellstock\-cli (1),
+.BR sorttrans\-cli (1),
+.BR withdraw\-cli (1).

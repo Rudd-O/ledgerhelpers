@@ -45,6 +45,7 @@ programs = [
 data_files = [
 	("/usr/share/applications", ["applications/%s.desktop" % p for p in programs]),
 	("/usr/share/doc/ledgerhelpers/doc", glob.glob(os.path.join(os.path.dirname(__file__), "doc", "*"))),
+	("/usr/share/man/man1", glob.glob(os.path.join(os.path.dirname(__file__), "man", "*.1"))),
 ] if platform.system() != 'Darwin' else []
 
 setup(
