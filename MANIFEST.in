@@ -1,7 +1,11 @@
 include README.md
-include toport/*
 include doc/*
 include applications/*.desktop
-include test/*py
-include test/testdata/*
-include test/dogtail/*.py
+include tests/*py
+include tests/testdata/*
+include tests/dogtail/*.py
+include *.spec
+include tox.ini
+include Jenkinsfile
+include build.parameters
+global-exclude *.py[cod]
