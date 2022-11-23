@@ -3,7 +3,7 @@ name: Test
 on: [push, pull_request]
 
 jobs:
-  build:
+  test:
     runs-on: ubuntu-22.04
     strategy:
       matrix:
@@ -19,14 +19,12 @@ jobs:
         set -e
         # sudo add-apt-repository universe
         # sudo apt-cache policy
-        sudo apt-get install -y python3-ledger tox gobject-introspection
+        sudo apt-get install -y python3-ledger tox python3-pytest gobject-introspection
         # Needed to allow Tox to run in the current env.
         # Current env necessary because we are installing GTK+ and other
         # libraries needed for the programs.
         pip3 install tox-current-env
-        # python -m pip install --upgrade pip
     - name: Run tests
       run: |
         # pylint $(git ls-files '*.py')
         tox --current-env -v
-
