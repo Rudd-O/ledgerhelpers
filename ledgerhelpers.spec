@@ -7,7 +7,7 @@
 %define mybuildnumber %{?build_number}%{?!build_number:1}
 
 Name:           python-%{_name}
-Version:        0.3.8
+Version:        0.3.9
 Release:        %{mybuildnumber}%{?dist}
 Summary:        A collection of helper programs and a helper library for Ledger (ledger-cli)
 
