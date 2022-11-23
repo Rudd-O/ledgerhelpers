@@ -19,7 +19,7 @@ jobs:
         set -e
         # sudo add-apt-repository universe
         # sudo apt-cache policy
-        sudo apt-get install -y python3-ledger tox
+        sudo apt-get install -y python3-ledger tox gobject-introspection
         # python -m pip install --upgrade pip
         # pip install pylint
     - name: Run tests
