@@ -28,5 +28,5 @@ jobs:
     - name: Run tests
       run: |
         # pylint $(git ls-files '*.py')
-        tox --current-env
+        tox --current-env -v
 
