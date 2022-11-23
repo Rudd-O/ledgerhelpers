@@ -20,8 +20,11 @@ jobs:
         # sudo add-apt-repository universe
         # sudo apt-cache policy
         sudo apt-get install -y python3-ledger tox gobject-introspection
+        # Needed to allow Tox to run in the current env.
+        # Current env necessary because we are installing GTK+ and other
+        # libraries needed for the programs.
+        pip3 install tox-current-env
         # python -m pip install --upgrade pip
-        # pip install pylint
     - name: Run tests
       run: |
         # pylint $(git ls-files '*.py')
