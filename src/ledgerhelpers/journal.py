@@ -309,7 +309,7 @@ class JournalSlave(JournalCommon, Process):
             for subpost in post.xact.posts():
                 if str(subpost.account) not in accts:
                     accts.append(str(subpost.account))
-                comm = subpost.amount / subpost.amount
+                comm = ledger.Amount(1).with_commodity(subpost.amount.commodity)
                 comm.commodity = comm.commodity.strip_annotations()
                 commos[str(subpost.account)] = str(comm)
                 amts[str(comm)] = True

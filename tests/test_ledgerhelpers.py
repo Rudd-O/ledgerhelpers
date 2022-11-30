@@ -45,6 +45,12 @@ class TestJournal(T):
         ts = journal.transactions_with_payee("beer", j.internal_parsing())
         self.assertEqual(ts[0].payee, "beer")
 
+    def test_transaction_with_zero_posting(self):
+        c = base.datapath("zero.dat")
+        j = journal.Journal.from_file(c, None)
+        _, commos = j.accounts_and_last_commodity_for_account()
+        self.assertEqual(commos["rest"], "1 USD")
+
 
 class TestGenerateRecord(T):
 
