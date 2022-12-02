@@ -45,25 +45,30 @@ How to download and install
 
 Here are instructions to install the very latest iteration of ledgerhelpers:
 
-On Linux systems that support RPM packages:
+If you are on a Linux system and want to install it as an RPM package:
 
 * Obtain the package with `git clone https://github.com/Rudd-O/ledgerhelpers`
 * Change to the directory `cd ledgerhelpers`
-* Create an installable package with `python setup.py bdist_rpm`
-* Install the package with `sudo rpm -Uvh dist/*noarch.rpm`
+* Create a source package with `python3 -m build --sdist`
+* Create a source RPM with `rpmbuild --define "_srcrpmdir ./" --define "_sourcedir dist/" -bs *.spec`
+  * You may need to install some dependencies at this point.  The process will tell you.
+* Create an installable RPM with `rpmbuild --rebuild --nodeps --define "_rpmdir ./" *.src.rpm`
+  * You may need to install some dependencies at this point.  The process will tell you.
+* Install the package with `sudo rpm -Uvh noarch/*.noarch.rpm`
 
-On other Linux systems:
+In other circumstances or Linux systems:
 
 * Obtain the package with `git clone https://github.com/Rudd-O/ledgerhelpers`
 * Change to the directory `cd ledgerhelpers`
-* Install directly with `sudo python setup.py install`
+* Create the source package directly with `python3 -m build --sdist`
+* Install the package (to your user directory `~/.local`) with `pip3 install dist/*.tar.gz`
+  * This will install a number of dependencies for you.  Your system should already
+    have the GTK+ 3 library and the Python GObject introspection library.
 
-On Mac OS X, the `python setup.py install` routine appears to have some problems,
-however this should be reasonably easy to fix by excluding the files in
-`/usr/share/applications` from being installed.  I await for more information
-on how to mitigate this issue.  In the meantime, the programs in `bin/` can run
-from the source directory, but you still need to install the right dependencies,
-such as GTK+ 3 or later, and the Python GObject introspection library.
+The programs in `bin/` can generally run from the source directory, provided
+that the PYTHONPATH points to the `src/` folder inside the source directory,
+but you still need to install the right dependencies, such as GTK+ 3 or later,
+and the Python GObject introspection library.
 
 License
 -------
