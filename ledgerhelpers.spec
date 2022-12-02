@@ -16,7 +16,7 @@ URL:            https://github.com/Rudd-O/%{_name}
 Source:         %{url}/archive/v%{version}/%{_name}-%{version}.tar.gz
 
 BuildArch:      noarch
-BuildRequires:  python3
+BuildRequires:  python3-devel
 
 %global _description %{expand:
 This is a collection of small single-purpose programs to aid your accounting
@@ -25,10 +25,10 @@ as the batteries that were never included with Ledger.}
 
 %description %_description
 
-%package -n python3-%{_name}
+%package -n %{_name}
 Summary:        %{summary}
 
-%description -n python3-%{_name} %_description
+%description -n %{_name} %_description
 
 %prep
 %autosetup -p1 -n %{_name}-%{version}
@@ -57,7 +57,10 @@ Summary:        %{summary}
 # For python3-pello, %%{pyproject_files} handles code files and %%license,
 # but executables and documentation must be listed in the spec file:
 
-%files -n python3-%{_name} -f %{pyproject_files}
+%files -n %{_name} -f %{pyproject_files}
+%attr(0755, -, -) %{_bindir}/*
+%{_mandir}/man1/*
+%{_datadir}/applications/*
 %doc README.md doc/*
 
 
