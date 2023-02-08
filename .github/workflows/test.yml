@@ -23,7 +23,7 @@ jobs:
         # Needed to allow Tox to run in the current env.
         # Current env necessary because we are installing GTK+ and other
         # libraries needed for the programs.
-        pip3 install tox-current-env
+        pip3 install tox-current-env pytest
     - name: Run tests
       run: |
         # pylint $(git ls-files '*.py')
