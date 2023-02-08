@@ -19,7 +19,7 @@ jobs:
         set -e
         # sudo add-apt-repository universe
         # sudo apt-cache policy
-        sudo apt-get install -y python3-ledger tox python3-pytest gobject-introspection
+        sudo apt-get install -qy python3-ledger tox python3-pytest gobject-introspection
         # Needed to allow Tox to run in the current env.
         # Current env necessary because we are installing GTK+ and other
         # libraries needed for the programs.
