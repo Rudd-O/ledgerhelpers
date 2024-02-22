@@ -6,3 +6,6 @@
 * make parsegmob output the transactions where the a/r accrual happens
 * figure out where to store bal, reg, and parsegmob, and parsemypay somewhere
   perhaps they should be more than just scripts in the financial vm
+* FIXME: whenever a lot is entered with a transaction date in the addtrans
+  boxes for values, the date is mangled and transformed into a format that
+  Ledger cannot parse
