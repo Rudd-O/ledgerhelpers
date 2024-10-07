@@ -2,7 +2,7 @@
 # Dogtail test script for addtrans.
 
 import os
-import pipes
+import shlex
 import tempfile
 
 from dogtail import config
@@ -33,11 +33,11 @@ t.write("""
 2015-10-05 * beer
     Assets:Cash                       -30 CHF
     Expenses:Drinking                  30 CHF
-""")
+""".encode())
 t.flush()
 t.seek(0, 0)
 
-run('addtrans --file %s' % pipes.quote(t.name))
+run(shlex.join(['addtrans', '--file', t.name]))
 addtrans = tree.root.application('addtrans')
 mainwin = addtrans.window('Add transaction')
 
