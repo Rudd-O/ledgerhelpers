@@ -2,8 +2,9 @@
 # Dogtail test script for addtrans.
 
 import os
-import pipes
 import tempfile
+
+from shlex import quote
 
 from dogtail import config
 from dogtail import tree
@@ -28,7 +29,7 @@ os.environ['PATH'] =  os.path.join(
 
 config.config.typingDelay = 0.025
 
-t = tempfile.NamedTemporaryFile()
+t = tempfile.NamedTemporaryFile(mode="w+")
 t.write("""
 2015-10-05 * beer
     Assets:Cash                       -30 CHF
@@ -37,7 +38,7 @@ t.write("""
 t.flush()
 t.seek(0, 0)
 
-run('addtrans --file %s' % pipes.quote(t.name))
+run('addtrans --file %s' % quote(t.name))
 addtrans = tree.root.application('addtrans')
 mainwin = addtrans.window('Add transaction')
 
