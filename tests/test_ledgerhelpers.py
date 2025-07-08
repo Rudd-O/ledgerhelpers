@@ -7,6 +7,7 @@ except ImportError:
     journal = None
 import tests.test_base as base
 import tempfile
+import time
 import unittest
 from unittest import TestCase as T
 
@@ -25,16 +26,19 @@ class TestJournal(T):
         self.assertEqual(commos["Expenses:Drinking"], "1.00 CHF")
 
     def test_reload_works(self):
+        with open(base.datapath("simple_transaction.dat")) as transaction_data:
+            chf_data = transaction_data.read()
+        eur_data = chf_data.replace("CHF", "EUR")
+
         with tempfile.NamedTemporaryFile(mode="w") as f:
-            with open(base.datapath("simple_transaction.dat")) as transaction_data:
-                data = transaction_data.read()
-            f.write(data)
+            f.write(chf_data)
             f.flush()
             j = journal.Journal.from_file(f.name, None)
             _, commos = j.accounts_and_last_commodity_for_account()
             self.assertEqual(commos["Expenses:Drinking"], "1.00 CHF")
-            data = data.replace("CHF", "EUR")
-            f.write(data)
+
+            time.sleep(0.01) # Wait a few ms to make sure st_mtime of the file changes
+            f.write(eur_data)
             f.flush()
             _, commos = j.accounts_and_last_commodity_for_account()
             self.assertEqual(commos["Expenses:Drinking"], "1.00 EUR")
